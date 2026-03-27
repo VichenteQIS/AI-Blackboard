@@ -23,9 +23,14 @@ export function showIdle() {
 function renderLatex(latex) {
   const normalized = normalizeLatex(latex);
   try {
-    return katex.renderToString(normalized, { displayMode: true, throwOnError: false, strict: false });
+    return katex.renderToString(normalized, { displayMode: true, throwOnError: true, strict: false });
   } catch {
-    return `<span style="color:rgba(255,150,150,.8);font-size:14px">${normalized}</span>`;
+    const repaired = aggressiveNormalizeLatex(normalized);
+    try {
+      return katex.renderToString(repaired, { displayMode: true, throwOnError: false, strict: false });
+    } catch {
+      return `<span style="color:rgba(255,150,150,.8);font-size:14px">${repaired}</span>`;
+    }
   }
 }
 
@@ -62,6 +67,19 @@ function normalizeLatex(input) {
   s = s.replace(/\s{2,}/g, ' ').replace(/\s*([=+\-])\s*/g, ' $1 ').trim();
 
   return s;
+}
+
+function aggressiveNormalizeLatex(s) {
+  return String(s || '')
+    .replace(/\\f\b/g, '\\frac')
+    .replace(/\\h\b/g, '\\hbar')
+    .replace(/\\n\b/g, '\\nabla')
+    .replace(/\\p\b/g, '\\partial')
+    .replace(/\\t\b/g, '\\theta')
+    .replace(/(^|[^\\])frac(?=\{)/g, '$1\\\\frac')
+    .replace(/(^|[^\\])hbar\b/g, '$1\\\\hbar')
+    .replace(/(^|[^\\])partial\b/g, '$1\\\\partial')
+    .replace(/(^|[^\\])nabla\b/g, '$1\\\\nabla');
 }
 
 function getAudioCtx() {

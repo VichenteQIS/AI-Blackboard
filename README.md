@@ -13,6 +13,9 @@ Interactive single-page chalkboard UI with **text, voice, and image inputs**.
   - New equations animate as if an invisible hand writes them.
   - Existing equations are reused and animated into new positions when possible.
   - Removed equations fade/erase out.
+  - `write` → render equations/notes.
+  - `erase` → clear the board.
+- **Resizable board**: drag the bottom-right corner handle to dynamically resize.
 
 ## Run locally
 

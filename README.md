@@ -18,6 +18,7 @@ Interactive chalkboard + chat experience with **text, voice, and image input**.
 - Pannable board canvas with persistent equation placements.
 - Animated chalk effects for writing, moving/reusing, and erasing equations.
 - LaTeX normalization step to recover common escaped-command artifacts before KaTeX rendering.
+- Optional synthesized chalk/eraser noise effects on write/erase interactions.
 
 ## Project structure
 

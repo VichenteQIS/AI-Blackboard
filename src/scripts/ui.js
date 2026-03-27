@@ -6,6 +6,7 @@ let panStartX = 0;
 let panStartY = 0;
 let basePanX = 0;
 let basePanY = 0;
+let audioCtx = null;
 
 export function setStatus(msg) {
   el.status.textContent = msg ? `⚠ ${msg}` : '';
@@ -41,6 +42,15 @@ function normalizeLatex(input) {
   // Strip remaining control chars that would confuse KaTeX rendering.
   s = s.replace(/[\u0000-\u001f]/g, '');
 
+  // Repair common truncated command heads after control-char stripping.
+  s = s
+    .replace(/(^|[^\\])ext\{/g, '$1\\\\text{')
+    .replace(/(^|[^\\])rac\{/g, '$1\\\\frac{')
+    .replace(/(^|[^\\])heta\b/g, '$1\\\\theta')
+    .replace(/(^|[^\\])psi\b/g, '$1\\\\psi')
+    .replace(/(^|[^\\])alpha\b/g, '$1\\\\alpha')
+    .replace(/(^|[^\\])beta\b/g, '$1\\\\beta');
+
   // Recover common commands when the leading slash was dropped.
   const cmds = ['text', 'frac', 'cos', 'sin', 'tan', 'theta', 'alpha', 'beta', 'gamma', 'pi', 'sqrt', 'left', 'right', 'cdot'];
   for (const cmd of cmds) {
@@ -48,7 +58,70 @@ function normalizeLatex(input) {
     s = s.replace(re, `$1\\\\${cmd}`);
   }
 
+  // Reduce odd spacing artifacts around operators.
+  s = s.replace(/\s{2,}/g, ' ').replace(/\s*([=+\-])\s*/g, ' $1 ').trim();
+
   return s;
+}
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+export function playChalkNoise(duration = 0.18) {
+  try {
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+    const bufferSize = Math.max(1, Math.floor(ctx.sampleRate * duration));
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.2;
+
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+    const hp = ctx.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = 1300;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.08, now + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+    noise.connect(hp).connect(gain).connect(ctx.destination);
+    noise.start(now);
+    noise.stop(now + duration);
+  } catch {
+    // no-op on browsers blocking autoplay audio
+  }
+}
+
+export function playEraserNoise(duration = 0.28) {
+  try {
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+    const bufferSize = Math.max(1, Math.floor(ctx.sampleRate * duration));
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.24;
+
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.value = 500;
+    bp.Q.value = 0.8;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.1, now + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+    noise.connect(bp).connect(gain).connect(ctx.destination);
+    noise.start(now);
+    noise.stop(now + duration);
+  } catch {
+    // no-op
+  }
 }
 
 function renderItem(item) {
@@ -67,12 +140,6 @@ function renderItem(item) {
   strip.className = 'eq-strip';
 
   (item.equations || []).forEach((eq, i) => {
-    if (i > 0) {
-      const divider = document.createElement('div');
-      divider.className = 'eq-divider';
-      strip.appendChild(divider);
-    }
-
     const row = document.createElement('div');
     row.className = 'eq-row';
     row.dataset.key = makeEqKey(eq, i);
@@ -137,6 +204,7 @@ export function renderBoard() {
 }
 
 export function animateEraseSweep() {
+  playEraserNoise();
   const sweep = document.createElement('div');
   sweep.className = 'erase-sweep';
   el.boardContent.appendChild(sweep);
@@ -161,6 +229,7 @@ export function paint(nextData) {
   };
 
   boardState.items.push(item);
+  playChalkNoise();
   renderBoard();
 }
 

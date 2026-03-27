@@ -1,2 +1,27 @@
 # AI-Blackboard
-LLM specialized for working in a virtual blackboard, so that by user input (prompts, could be audio, text, or images) the blackboard changes dynamically and in real tim
+
+Interactive single-page chalkboard UI with **text, voice, and image inputs**.
+
+## Features
+
+- **Visible input rows** for API key, text prompt, voice recording, and image upload.
+- **LLM action routing** via structured JSON:
+  - `write` → render equations/notes.
+  - `erase` → clear the board.
+- **Resizable board**: drag the bottom-right corner handle to dynamically resize.
+
+## Run locally
+
+1. Open `index.html` in your browser (or serve the folder with any static server).
+2. Paste your OpenAI API key.
+3. Provide one or more inputs:
+   - Text prompt
+   - Voice recording
+   - Image upload
+4. Click **✎ Write**.
+
+## Notes
+
+- Audio is transcribed with `whisper-1`.
+- This demo calls OpenAI APIs directly from the browser.
+- For production use, proxy API calls through a backend to protect API keys.

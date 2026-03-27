@@ -19,6 +19,7 @@ html,body{
   font-family:'Caveat',cursive;
 }
 
+/* ── Wooden frame ── */
 .frame{
   width:100%;
   max-width:980px;
@@ -33,30 +34,42 @@ html,body{
   position:relative;
 }
 
+/* grain */
 .frame::before{
   content:'';position:absolute;inset:0;border-radius:4px;
   background:repeating-linear-gradient(88deg,transparent 0,rgba(0,0,0,.04) 1px,transparent 2px,transparent 10px);
   pointer-events:none;
 }
 
-.screw{position:absolute;width:10px;height:10px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#a07040,#3a1e06);box-shadow:inset 0 1px 2px rgba(0,0,0,.6)}
-.screw.tl{top:8px;left:8px}.screw.tr{top:8px;right:8px}.screw.bl{bottom:26px;left:8px}.screw.br{bottom:26px;right:8px}
+/* corner screws */
+.screw{
+  position:absolute;width:10px;height:10px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#a07040,#3a1e06);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.6);
+}
+.screw.tl{top:8px;left:8px}
+.screw.tr{top:8px;right:8px}
+.screw.bl{bottom:26px;left:8px}
+.screw.br{bottom:26px;right:8px}
 
+/* ── Board surface ── */
 .board{
   background:#243d2f;
-  min-height:340px;
+  min-height:300px;
   position:relative;
   overflow:hidden;
   border:1.5px solid rgba(0,0,0,.5);
   box-shadow:inset 0 0 80px rgba(0,0,0,.25);
 }
 
+/* faint ruled lines */
 .board::before{
   content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
   background-image:linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px);
   background-size:100% 48px;
 }
 
+/* chalk dust smudges */
 .board::after{
   content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
   background:
@@ -65,10 +78,11 @@ html,body{
     radial-gradient(ellipse 30% 15% at 50% 50%,rgba(255,255,255,.008) 0%,transparent 100%);
 }
 
+/* ── Content area ── */
 #board-content{
   position:relative;z-index:1;
   padding:32px 40px 28px;
-  min-height:340px;
+  min-height:300px;
   display:flex;
   flex-direction:column;
   align-items:stretch;
@@ -76,118 +90,263 @@ html,body{
   gap:0;
 }
 
-.eq-title{font-size:26px;font-weight:700;color:rgba(255,252,228,.8);text-align:center;letter-spacing:.04em;margin-bottom:20px;text-shadow:0 0 20px rgba(255,252,200,.15);animation:chalkIn .5s ease both}
-.eq-row{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:0 20px;animation:chalkIn .5s ease both}
-.eq-label{font-size:14px;color:rgba(220,240,200,.45);text-align:center;margin-bottom:6px}
-.eq-math{color:rgba(255,252,228,.88);text-shadow:0 0 14px rgba(255,252,200,.12);text-align:center}
-.eq-math.sz-large{font-size:2rem}.eq-math.sz-medium{font-size:1.4rem;color:rgba(255,252,228,.78)}.eq-math.sz-small{font-size:1rem;color:rgba(255,252,228,.65)}
-.eq-math .katex,.eq-math .katex *{color:inherit!important}
+/* ── Title ── */
+.eq-title{
+  font-size:26px;
+  font-weight:700;
+  color:rgba(255,252,228,.8);
+  text-align:center;
+  letter-spacing:.04em;
+  margin-bottom:20px;
+  text-shadow:0 0 20px rgba(255,252,200,.15);
+  animation:chalkIn .5s ease both;
+}
 
-.eq-strip{display:flex;flex-direction:row;align-items:center;justify-content:center;width:100%;gap:0}
-.eq-divider{width:1px;height:100px;background:rgba(255,252,200,.12);flex-shrink:0;align-self:center;animation:chalkIn .5s ease both}
+/* ── Equations row (horizontal) ── */
+.eq-row{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  flex:1;
+  padding:0 20px;
+  animation:chalkIn .5s ease both;
+}
 
-.notes-area{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:20px}
-.note{font-size:16px;color:rgba(190,230,195,.7);border-left:2px solid rgba(190,230,195,.25);padding:2px 10px;animation:chalkIn .5s ease both}
+.eq-label{
+  font-size:14px;
+  color:rgba(220,240,200,.45);
+  text-align:center;
+  margin-bottom:6px;
+}
 
-.loading{display:flex;gap:10px;align-items:center;justify-content:center;height:80px}
-.loading span{width:9px;height:9px;border-radius:50%;background:rgba(255,252,220,.4);animation:dot 1.2s ease-in-out infinite both}
-.loading span:nth-child(2){animation-delay:.2s}.loading span:nth-child(3){animation-delay:.4s}
-@keyframes dot{0%,100%{transform:scale(.55);opacity:.3}50%{transform:scale(1);opacity:.9}}
+.eq-math{
+  color:rgba(255,252,228,.88);
+  text-shadow:0 0 14px rgba(255,252,200,.12);
+  text-align:center;
+}
+.eq-math.sz-large  { font-size:2rem }
+.eq-math.sz-medium { font-size:1.4rem; color:rgba(255,252,228,.78) }
+.eq-math.sz-small  { font-size:1rem;   color:rgba(255,252,228,.65) }
 
-.idle-title{font-size:30px;font-weight:400;color:rgba(255,252,228,.35);text-align:center;margin-bottom:12px;animation:chalkIn .6s ease both}
-.idle-hint{font-size:16px;color:rgba(255,252,228,.22);text-align:center;animation:chalkIn .6s .1s ease both}
-@keyframes chalkIn{from{opacity:0;transform:translateY(-10px) scale(.98);filter:blur(4px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+/* force KaTeX to inherit chalk color */
+.eq-math .katex,
+.eq-math .katex *{ color:inherit!important }
 
-.tray{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:linear-gradient(180deg,#2a1206 0%,#1c0d04 100%);margin-top:10px;padding:12px 18px;border-top:2px solid rgba(0,0,0,.5)}
-.tray input[type="text"], .tray input[type="password"]{background:transparent;border:none;border-bottom:1.5px solid rgba(255,252,200,.2);color:rgba(255,252,228,.9);font-family:'Caveat',cursive;padding:6px 4px;outline:none;transition:border-color .2s}
-#apikey{max-width:190px;flex:0 0 190px;font-size:15px}
-#req{flex:1;min-width:220px;font-size:20px}
+/* ── Equations strip (horizontal flex container) ── */
+.eq-strip{
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  gap:0;
+}
+
+/* ── Vertical divider between equations ── */
+.eq-divider{
+  width:1px;
+  height:100px;
+  background:rgba(255,252,200,.12);
+  flex-shrink:0;
+  align-self:center;
+  animation:chalkIn .5s ease both;
+}
+
+/* ── Notes ── */
+.notes-area{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  justify-content:center;
+  margin-top:20px;
+}
+.note{
+  font-size:16px;
+  color:rgba(190,230,195,.7);
+  border-left:2px solid rgba(190,230,195,.25);
+  padding:2px 10px;
+  animation:chalkIn .5s ease both;
+}
+
+/* ── Loading dots ── */
+.loading{
+  display:flex;gap:10px;align-items:center;justify-content:center;
+  height:80px;
+}
+.loading span{
+  width:9px;height:9px;border-radius:50%;
+  background:rgba(255,252,220,.4);
+  animation:dot 1.2s ease-in-out infinite both;
+}
+.loading span:nth-child(2){animation-delay:.2s}
+.loading span:nth-child(3){animation-delay:.4s}
+@keyframes dot{
+  0%,100%{transform:scale(.55);opacity:.3}
+  50%{transform:scale(1);opacity:.9}
+}
+
+/* ── Error ── */
+.board-error{
+  font-size:22px;
+  color:rgba(255,130,130,.8);
+  text-align:center;
+}
+
+/* ── Idle hint ── */
+.idle-title{
+  font-size:30px;font-weight:400;
+  color:rgba(255,252,228,.35);
+  text-align:center;margin-bottom:12px;
+  animation:chalkIn .6s ease both;
+}
+.idle-hint{
+  font-size:16px;
+  color:rgba(255,252,228,.22);
+  text-align:center;
+  animation:chalkIn .6s .1s ease both;
+}
+
+/* ── Chalk-in animation ── */
+@keyframes chalkIn{
+  from{opacity:0;transform:translateY(-10px) scale(.98);filter:blur(4px)}
+  to  {opacity:1;transform:translateY(0)      scale(1);  filter:blur(0)}
+}
+
+/* ── Chalk tray ── */
+.tray{
+  display:flex;gap:10px;align-items:center;
+  background:linear-gradient(180deg,#2a1206 0%,#1c0d04 100%);
+  margin-top:10px;
+  padding:12px 18px;
+  border-top:2px solid rgba(0,0,0,.5);
+}
+
+.tray input{
+  flex:1;background:transparent;border:none;
+  border-bottom:1.5px solid rgba(255,252,200,.2);
+  color:rgba(255,252,228,.9);
+  font-family:'Caveat',cursive;font-size:20px;
+  padding:6px 4px;outline:none;
+  transition:border-color .2s;
+}
 .tray input:focus{border-bottom-color:rgba(255,252,200,.5)}
 .tray input::placeholder{color:rgba(255,252,228,.25)}
 
-.tray button,.file-label{background:rgba(255,252,200,.08);border:1px solid rgba(255,252,200,.18);color:rgba(255,252,228,.8);font-family:'Caveat',cursive;font-size:16px;padding:8px 14px;border-radius:3px;cursor:pointer;transition:background .15s,color .15s;white-space:nowrap}
-.tray button:hover:not(:disabled),.file-label:hover{background:rgba(255,252,200,.18);color:#fff}
+.tray button{
+  background:rgba(255,252,200,.08);
+  border:1px solid rgba(255,252,200,.18);
+  color:rgba(255,252,228,.8);
+  font-family:'Caveat',cursive;font-size:17px;
+  padding:8px 20px;border-radius:3px;cursor:pointer;
+  transition:background .15s,color .15s;
+  white-space:nowrap;
+}
+.tray button:hover:not(:disabled){background:rgba(255,252,200,.18);color:#fff}
 .tray button:disabled{opacity:.4;cursor:not-allowed}
-.btn-erase{background:none;border:none;color:rgba(255,252,228,.35)}
-.btn-erase:hover{color:rgba(255,252,228,.7)}
 
-#image{display:none}
-#image-chip{font-size:14px;color:rgba(205,235,200,.75)}
-#status-bar{font-family:'Caveat',cursive;font-size:14px;padding:6px 18px;min-height:26px;color:rgba(255,160,160,.85);background:#100804;border-top:1px solid rgba(0,0,0,.4);display:none}
+/* eraser button */
+.btn-erase{
+  background:none;border:none;
+  color:rgba(255,252,228,.3);
+  font-family:'Caveat',cursive;font-size:15px;
+  cursor:pointer;padding:8px 10px;
+  transition:color .15s;
+}
+.btn-erase:hover{color:rgba(255,252,228,.6)}
 </style>
 </head>
 <body>
+
 <div class="frame">
-  <div class="screw tl"></div><div class="screw tr"></div><div class="screw bl"></div><div class="screw br"></div>
+  <div class="screw tl"></div>
+  <div class="screw tr"></div>
+  <div class="screw bl"></div>
+  <div class="screw br"></div>
 
   <div class="board">
     <div id="board-content">
       <div class="idle-title">What shall I write?</div>
-      <div class="idle-hint">Type, speak, or attach an image. Say "erase" to clear.</div>
+      <div class="idle-hint">Euler's identity · Maxwell's equations · Schrödinger · Fourier transform · anything</div>
     </div>
   </div>
 
   <div class="tray">
-    <input id="apikey" type="password" placeholder="sk-… OpenAI key" autocomplete="off" />
-    <input id="req" type="text" placeholder="Ask for equations… or say erase" autocomplete="off" />
-
-    <label class="file-label" for="image">🖼 Image</label>
-    <input id="image" type="file" accept="image/*" />
-    <span id="image-chip"></span>
-
-    <button id="mic-btn" title="Record audio prompt">🎙 Record</button>
+    <input id="apikey" type="password" placeholder="sk-… OpenAI key" autocomplete="off" style="max-width:190px;flex:0 0 190px;font-size:15px;" />
+    <span style="color:rgba(255,252,228,.18);font-size:20px;flex-shrink:0;padding:0 4px">|</span>
+    <input id="req" type="text" placeholder="Ask for any equation or concept…" autocomplete="off" />
     <button id="go-btn">✎ Write</button>
     <button class="btn-erase" id="erase-btn" title="Erase board">⌫ Erase</button>
   </div>
-
-  <div id="status-bar"></div>
+  <div id="status-bar" style="
+    font-family:'Caveat',cursive;font-size:14px;
+    padding:6px 18px;min-height:26px;
+    color:rgba(255,160,160,.85);
+    background:#100804;
+    border-top:1px solid rgba(0,0,0,.4);
+    display:none;
+  "></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script>
-const SYSTEM = `You are a mathematical blackboard controller.
-Respond ONLY with one JSON object in this exact schema:
+const SYSTEM = `You are a mathematical blackboard. Given a topic or equation request, respond ONLY with a single JSON object — no markdown fences, no extra text — in this exact schema:
+
 {
-  "action": "write|erase",
   "title": "Concept name (max 5 words)",
   "equations": [
-    { "label": "optional tag", "latex": "raw KaTeX expression", "size": "large|medium|small" }
+    { "label": "optional tag", "latex": "raw KaTeX LaTeX expression", "size": "large|medium|small" }
   ],
-  "notes": ["short chalk annotation", "..."]
+  "notes": ["short chalk annotation (max 8 words)", "..."]
 }
+
 Rules:
-- If user intent is clear/erase/wipe board, return action="erase" and empty title/equations/notes.
-- Otherwise return action="write" with 1-4 equations and 1-3 notes.
-- latex must be valid KaTeX and must not use $ wrappers.
-- No markdown fences. JSON only.`;
+- "latex" must be valid KaTeX. Do NOT wrap in $, $$, \\( \\), or \\[ \\].
+- Use "large" for the hero equation, "medium" for supporting equations, "small" for definitions/substitutions.
+- 1–4 equations, 1–3 notes.
+- Notes are terse and insightful — like what a professor writes in the margin.
+- Respond ONLY with the JSON.`;
 
-let mediaRecorder = null;
-let recordedChunks = [];
-let recordedAudioBlob = null;
-
-function setStatus(msg) {
-  const bar = document.getElementById('status-bar');
-  if (msg) { bar.textContent = '⚠ ' + msg; bar.style.display = 'block'; }
-  else { bar.textContent = ''; bar.style.display = 'none'; }
-}
-
-function showLoading() {
-  document.getElementById('board-content').innerHTML = '<div class="loading"><span></span><span></span><span></span></div>';
-}
-
-function showIdle() {
-  document.getElementById('board-content').innerHTML =
-    '<div class="idle-title">What shall I write?</div><div class="idle-hint">Type, speak, or attach an image. Say "erase" to clear.</div>';
+async function fetchBoard(query) {
+  const key = document.getElementById('apikey').value.trim();
+  if (!key) throw new Error('Paste your OpenAI API key in the field on the left.');
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + key,
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      max_tokens: 1000,
+      messages: [
+        { role: 'system', content: SYSTEM },
+        { role: 'user',   content: query },
+      ],
+    }),
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.error?.message || res.statusText);
+  }
+  const data = await res.json();
+  const raw = (data.choices?.[0]?.message?.content || '').replace(/```json|```/g,'').trim();
+  try {
+    return JSON.parse(raw);
+  } catch(e) {
+    throw new Error('Bad JSON from model: ' + raw.slice(0, 120));
+  }
 }
 
 function renderLatex(latex) {
-  try { return katex.renderToString(latex, { displayMode: true, throwOnError: false, strict: false }); }
-  catch { return `<span style="color:rgba(255,150,150,.8);font-size:14px">${latex}</span>`; }
+  try {
+    return katex.renderToString(latex, { displayMode: true, throwOnError: false, strict: false });
+  } catch {
+    return `<span style="color:rgba(255,150,150,.8);font-size:14px">${latex}</span>`;
+  }
 }
 
 function paint(data) {
-  if (data.action === 'erase') { showIdle(); return; }
-
   const el = document.getElementById('board-content');
   el.innerHTML = '';
 
@@ -201,13 +360,15 @@ function paint(data) {
 
   (data.equations || []).forEach((eq, i) => {
     if (i > 0) {
-      const divider = document.createElement('div');
-      divider.className = 'eq-divider';
-      strip.appendChild(divider);
+      const div = document.createElement('div');
+      div.className = 'eq-divider';
+      div.style.animationDelay = `${100 + i * 140}ms`;
+      strip.appendChild(div);
     }
 
     const col = document.createElement('div');
     col.className = 'eq-row';
+    col.style.animationDelay = `${60 + i * 140}ms`;
 
     if (eq.label) {
       const lbl = document.createElement('div');
@@ -225,102 +386,43 @@ function paint(data) {
 
   el.appendChild(strip);
 
-  if (data.notes?.length) {
-    const notes = document.createElement('div');
-    notes.className = 'notes-area';
-    data.notes.forEach(n => {
+  if (data.notes && data.notes.length) {
+    const na = document.createElement('div');
+    na.className = 'notes-area';
+    const baseDelay = 100 + (data.equations?.length || 0) * 140;
+    data.notes.forEach((n, i) => {
       const note = document.createElement('div');
       note.className = 'note';
       note.textContent = n;
-      notes.appendChild(note);
+      note.style.animationDelay = `${baseDelay + i * 90}ms`;
+      na.appendChild(note);
     });
-    el.appendChild(notes);
+    el.appendChild(na);
   }
 }
 
-function safeParseModelJSON(raw) {
-  const cleaned = raw.replace(/```json|```/g, '').trim();
-  const firstBrace = cleaned.indexOf('{');
-  const lastBrace = cleaned.lastIndexOf('}');
-  const jsonSlice = firstBrace >= 0 && lastBrace > firstBrace ? cleaned.slice(firstBrace, lastBrace + 1) : cleaned;
-  return JSON.parse(jsonSlice);
+function showLoading() {
+  document.getElementById('board-content').innerHTML =
+    '<div class="loading"><span></span><span></span><span></span></div>';
 }
 
-async function transcribeAudio(blob, key) {
-  const form = new FormData();
-  form.append('file', blob, 'prompt.webm');
-  form.append('model', 'whisper-1');
-
-  const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-    method: 'POST',
-    headers: { Authorization: 'Bearer ' + key },
-    body: form,
-  });
-
-  if (!res.ok) {
-    const e = await res.json().catch(() => ({}));
-    throw new Error(e.error?.message || 'Audio transcription failed.');
-  }
-
-  const data = await res.json();
-  return (data.text || '').trim();
+function showIdle() {
+  document.getElementById('board-content').innerHTML =
+    `<div class="idle-title">What shall I write?</div>
+     <div class="idle-hint">Euler's identity · Maxwell's equations · Schrödinger · Fourier transform · anything</div>`;
 }
 
-async function readImageAsDataURL(file) {
-  return await new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error('Could not read image file.'));
-    reader.readAsDataURL(file);
-  });
-}
-
-async function fetchBoard({ query, imageDataURL, key }) {
-  const userParts = [];
-  if (query) userParts.push({ type: 'text', text: query });
-  if (imageDataURL) userParts.push({ type: 'image_url', image_url: { url: imageDataURL } });
-
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + key,
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      temperature: 0.2,
-      max_tokens: 1000,
-      messages: [
-        { role: 'system', content: SYSTEM },
-        { role: 'user', content: userParts.length ? userParts : [{ type: 'text', text: 'erase' }] },
-      ],
-    }),
-  });
-
-  if (!res.ok) {
-    const e = await res.json().catch(() => ({}));
-    throw new Error(e.error?.message || res.statusText);
-  }
-
-  const data = await res.json();
-  const raw = data.choices?.[0]?.message?.content || '{}';
-  const parsed = safeParseModelJSON(raw);
-  if (!parsed.action) parsed.action = 'write';
-  return parsed;
+function setStatus(msg) {
+  const bar = document.getElementById('status-bar');
+  if (msg) { bar.textContent = '⚠ ' + msg; bar.style.display = 'block'; }
+  else      { bar.textContent = '';          bar.style.display = 'none'; }
 }
 
 async function go() {
-  const key = document.getElementById('apikey').value.trim();
   const input = document.getElementById('req');
-  const imageInput = document.getElementById('image');
-  const btn = document.getElementById('go-btn');
+  const btn   = document.getElementById('go-btn');
   const query = input.value.trim();
-
-  if (!key) { setStatus('Paste your OpenAI API key first.'); return; }
-
-  let transcript = '';
-  let imageDataURL = null;
-  const imageFile = imageInput.files?.[0];
+  if (!query) { input.focus(); return; }
 
   setStatus('');
   btn.disabled = true;
@@ -328,28 +430,8 @@ async function go() {
   showLoading();
 
   try {
-    if (recordedAudioBlob) {
-      transcript = await transcribeAudio(recordedAudioBlob, key);
-      if (transcript && !query) input.value = transcript;
-    }
-
-    if (imageFile) {
-      imageDataURL = await readImageAsDataURL(imageFile);
-    }
-
-    const mergedQuery = [query, transcript].filter(Boolean).join('\n');
-    if (!mergedQuery && !imageDataURL) {
-      showIdle();
-      setStatus('Add text, record audio, or attach an image.');
-      return;
-    }
-
-    const boardData = await fetchBoard({ query: mergedQuery, imageDataURL, key });
-    paint(boardData);
-
-    recordedAudioBlob = null;
-    imageInput.value = '';
-    document.getElementById('image-chip').textContent = '';
+    const data = await fetchBoard(query);
+    paint(data);
     input.value = '';
   } catch (err) {
     showIdle();
@@ -362,54 +444,11 @@ async function go() {
   }
 }
 
-async function toggleRecording() {
-  const micBtn = document.getElementById('mic-btn');
-
-  if (mediaRecorder && mediaRecorder.state === 'recording') {
-    mediaRecorder.stop();
-    micBtn.textContent = '🎙 Record';
-    return;
-  }
-
-  if (!navigator.mediaDevices?.getUserMedia) {
-    setStatus('Microphone recording is not supported in this browser.');
-    return;
-  }
-
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  recordedChunks = [];
-  mediaRecorder = new MediaRecorder(stream);
-
-  mediaRecorder.ondataavailable = evt => {
-    if (evt.data.size > 0) recordedChunks.push(evt.data);
-  };
-
-  mediaRecorder.onstop = () => {
-    recordedAudioBlob = new Blob(recordedChunks, { type: 'audio/webm' });
-    setStatus('Audio captured. Click ✎ Write to transcribe and render.');
-    stream.getTracks().forEach(track => track.stop());
-  };
-
-  mediaRecorder.start();
-  micBtn.textContent = '■ Stop';
-  setStatus('Recording… click ■ Stop when done.');
-}
-
 document.getElementById('go-btn').addEventListener('click', go);
-document.getElementById('erase-btn').addEventListener('click', () => {
-  recordedAudioBlob = null;
-  document.getElementById('image').value = '';
-  document.getElementById('image-chip').textContent = '';
-  document.getElementById('req').value = '';
-  showIdle();
-  setStatus('');
+document.getElementById('erase-btn').addEventListener('click', showIdle);
+document.getElementById('req').addEventListener('keydown', e => {
+  if (e.key === 'Enter') go();
 });
-document.getElementById('mic-btn').addEventListener('click', () => toggleRecording().catch(err => setStatus(err.message || 'Microphone error.')));
-document.getElementById('image').addEventListener('change', e => {
-  const name = e.target.files?.[0]?.name || '';
-  document.getElementById('image-chip').textContent = name ? `Attached: ${name}` : '';
-});
-document.getElementById('req').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
 </script>
 </body>
 </html>

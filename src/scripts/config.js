@@ -11,6 +11,7 @@ Respond ONLY with one JSON object in this exact schema:
 Rules:
 - If user intent is erase/wipe/clear board, return action="erase" and empty title/equations/notes.
 - Prefer reusing previously written equations when useful, only change what is needed.
+- Always include "label" for each equation (use empty string if none).
 - latex must be valid KaTeX and must not use $ wrappers.
 - No markdown fences. JSON only.`;
 
@@ -35,7 +36,7 @@ export const RESPONSE_SCHEMA = {
             latex: { type: 'string' },
             size: { type: 'string', enum: ['large', 'medium', 'small'] },
           },
-          required: ['latex', 'size'],
+          required: ['label', 'latex', 'size'],
         },
       },
       notes: { type: 'array', items: { type: 'string' } },

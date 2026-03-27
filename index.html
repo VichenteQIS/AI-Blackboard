@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Blackboard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background:#191209; display:flex; align-items:center; justify-content:center; padding:16px; font-family:'Caveat',cursive; }
+
+.frame { width:min(96vw,980px); height:min(90vh,680px); min-width:520px; min-height:460px; max-width:1200px; max-height:92vh; background:#3b1f09; border-radius:4px; box-shadow:inset 0 1px 0 rgba(255,210,120,.15), inset 0 -1px 0 rgba(0,0,0,.5), 0 20px 70px rgba(0,0,0,.85), 0 2px 6px rgba(0,0,0,.6); position:relative; padding:18px 18px 12px; display:flex; flex-direction:column; gap:10px; }
+.frame::before { content:''; position:absolute; inset:0; border-radius:4px; background:repeating-linear-gradient(88deg,transparent 0,rgba(0,0,0,.04) 1px,transparent 2px,transparent 10px); pointer-events:none; }
+.screw { position:absolute; width:10px; height:10px; border-radius:50%; background:radial-gradient(circle at 35% 35%,#a07040,#3a1e06); box-shadow:inset 0 1px 2px rgba(0,0,0,.6); }
+.screw.tl{top:8px;left:8px}.screw.tr{top:8px;right:8px}.screw.bl{bottom:8px;left:8px}.screw.br{bottom:8px;right:8px}
+
+.board { flex:1; background:#243d2f; position:relative; overflow:hidden; border:1.5px solid rgba(0,0,0,.5); box-shadow:inset 0 0 80px rgba(0,0,0,.25); min-height:220px; }
+.board::before { content:''; position:absolute; inset:0; z-index:0; pointer-events:none; background-image:linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px); background-size:100% 46px; }
+.board::after { content:''; position:absolute; inset:0; z-index:0; pointer-events:none; background:radial-gradient(ellipse 60% 30% at 15% 20%,rgba(255,255,255,.018) 0%,transparent 100%), radial-gradient(ellipse 40% 20% at 85% 75%,rgba(255,255,255,.012) 0%,transparent 100%), radial-gradient(ellipse 30% 15% at 50% 50%,rgba(255,255,255,.008) 0%,transparent 100%); }
+#board-content { position:relative; z-index:1; width:100%; height:100%; padding:28px 32px; display:flex; flex-direction:column; justify-content:center; gap:14px; }
+
+.eq-title{font-size:28px;font-weight:700;color:rgba(255,252,228,.85);text-align:center;min-height:34px}
+.eq-strip{display:flex;align-items:center;justify-content:center;width:100%;position:relative;gap:0}
+.eq-row{flex:1;min-width:0;padding:0 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+.eq-label{font-size:14px;color:rgba(220,240,200,.45);margin-bottom:6px}
+.eq-math{color:rgba(255,252,228,.88);text-align:center;position:relative;display:inline-block;text-shadow:0 0 14px rgba(255,252,200,.14)}
+.eq-math.sz-large{font-size:2rem}.eq-math.sz-medium{font-size:1.35rem;color:rgba(255,252,228,.78)}.eq-math.sz-small{font-size:1rem;color:rgba(255,252,228,.65)}
+.eq-math .katex,.eq-math .katex *{color:inherit!important}
+.eq-divider{width:1px;height:90px;background:rgba(255,252,200,.12)}
+
+.notes-area{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;min-height:24px}
+.note{font-size:16px;color:rgba(190,230,195,.72);border-left:2px solid rgba(190,230,195,.25);padding:2px 10px;opacity:0;transform:translateY(4px);animation:noteIn .35s ease forwards}
+@keyframes noteIn{to{opacity:1;transform:translateY(0)}}
+
+/* Writing / moving / erasing effects */
+.eq-row.reused{transition:transform .55s ease, opacity .25s ease}
+.eq-row.new .eq-math{clip-path:inset(0 100% 0 0);animation:chalkReveal .9s steps(18,end) forwards}
+@keyframes chalkReveal{to{clip-path:inset(0 0 0 0)}}
+.hand{position:absolute;top:52%;left:0;transform:translate(-50%,-50%);width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.95),rgba(255,255,255,.35));filter:blur(.2px);opacity:0}
+.eq-row.new .hand{animation:handMove .9s linear forwards}
+@keyframes handMove{0%{left:6%;opacity:0}8%{opacity:.95}92%{opacity:.95}100%{left:94%;opacity:0}}
+
+.ghost-eq{position:absolute;pointer-events:none;z-index:3;opacity:1;transform-origin:left center;animation:eraseOut .5s ease forwards}
+@keyframes eraseOut{to{opacity:0;filter:blur(1.6px);transform:translateX(-18px) scaleX(.85)}}
+
+.erase-sweep{position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(180,210,180,.08) 45%,rgba(180,210,180,.19) 52%,transparent 58%);animation:sweep .45s ease forwards;z-index:4;pointer-events:none}
+@keyframes sweep{from{transform:translateX(-120%)}to{transform:translateX(120%)}}
+
+.idle-title{font-size:32px;color:rgba(255,252,228,.38);text-align:center;margin-bottom:10px}
+.idle-hint{font-size:17px;color:rgba(255,252,228,.26);text-align:center}
+.loading{display:flex;gap:10px;align-items:center;justify-content:center;height:100%}
+.loading span{width:9px;height:9px;border-radius:50%;background:rgba(255,252,220,.4);animation:dot 1.2s ease-in-out infinite both}
+.loading span:nth-child(2){animation-delay:.2s}.loading span:nth-child(3){animation-delay:.4s}
+@keyframes dot{0%,100%{transform:scale(.55);opacity:.3}50%{transform:scale(1);opacity:.9}}
+
+.controls{background:linear-gradient(180deg,#2a1206 0%,#1c0d04 100%);border-top:2px solid rgba(0,0,0,.5);padding:10px 12px;display:grid;gap:8px}
+.control-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.control-label{color:rgba(255,252,228,.55);font-size:16px;min-width:54px}
+input[type="text"],input[type="password"],input[type="file"]{background:rgba(0,0,0,.1);border:1px solid rgba(255,252,200,.2);color:rgba(255,252,228,.9);font-family:'Caveat',cursive;border-radius:3px;padding:6px 8px}
+input[type="text"]{flex:1;min-width:240px;font-size:20px}input[type="password"]{width:240px;font-size:16px}input[type="file"]{max-width:320px;font-size:14px}
+button{background:rgba(255,252,200,.08);border:1px solid rgba(255,252,200,.18);color:rgba(255,252,228,.84);font-family:'Caveat',cursive;font-size:17px;border-radius:3px;padding:8px 12px;cursor:pointer}
+button:hover:not(:disabled){background:rgba(255,252,200,.18);color:#fff}button:disabled{opacity:.4;cursor:not-allowed}
+#status-bar{color:rgba(255,160,160,.88);font-size:15px;min-height:18px}
+
+.resize-handle{position:absolute;right:3px;bottom:3px;width:22px;height:22px;cursor:nwse-resize;border-radius:2px;background:linear-gradient(135deg,transparent 0 45%,rgba(255,252,228,.25) 46% 52%,transparent 53% 100%),linear-gradient(135deg,transparent 0 62%,rgba(255,252,228,.25) 63% 69%,transparent 70% 100%),linear-gradient(135deg,transparent 0 78%,rgba(255,252,228,.25) 79% 85%,transparent 86% 100%)}
+@media (max-width:720px){.frame{min-width:100%;height:94vh}input[type="password"],input[type="text"],input[type="file"]{width:100%;min-width:0}}
+</style>
+</head>
+<body>
+<div class="frame" id="frame">
+  <div class="screw tl"></div><div class="screw tr"></div><div class="screw bl"></div><div class="screw br"></div>
+
+  <div class="board" id="board">
+    <div id="board-content">
+      <div class="idle-title">What shall I write?</div>
+      <div class="idle-hint">Use text, voice, or image. Say "erase" to clear the board.</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row"><span class="control-label">API Key</span><input id="apikey" type="password" placeholder="sk-..." autocomplete="off" /></div>
+    <div class="control-row"><span class="control-label">Prompt</span><input id="req" type="text" placeholder="Type a concept, equation, or 'erase'" autocomplete="off" /><button id="go-btn">✎ Write</button><button id="erase-btn" title="Erase board">⌫ Erase</button></div>
+    <div class="control-row"><span class="control-label">Voice</span><button id="mic-btn" title="Record audio">🎙 Record</button><span style="color:rgba(205,235,200,.75);font-size:15px" id="voice-chip">No audio captured</span></div>
+    <div class="control-row"><span class="control-label">Image</span><input id="image" type="file" accept="image/*" /><span style="color:rgba(205,235,200,.75);font-size:15px" id="image-chip">No image selected</span></div>
+    <div id="status-bar"></div>
+  </div>
+
+  <div class="resize-handle" id="resize-handle" title="Drag to resize board"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script>
+const SYSTEM = `You are a mathematical blackboard controller.
+Respond ONLY with one JSON object in this exact schema:
+{
+  "action": "write|erase",
+  "title": "Concept name (max 5 words)",
+  "equations": [
+    { "label": "optional tag", "latex": "raw KaTeX expression", "size": "large|medium|small" }
+  ],
+  "notes": ["short chalk annotation", "..."]
+}
+Rules:
+- If user intent is erase/wipe/clear board, return action="erase" and empty title/equations/notes.
+- Prefer reusing previously written equations when useful, only change what is needed.
+- latex must be valid KaTeX and must not use $ wrappers.
+- No markdown fences. JSON only.`;
+
+let mediaRecorder = null;
+let recordedChunks = [];
+let recordedAudioBlob = null;
+let boardState = { title: '', equations: [], notes: [] };
+
+function makeEqKey(eq, i) {
+  return `${eq.label || 'eq'}::${(eq.latex || '').replace(/\s+/g, '')}::${i}`;
+}
+
+function setStatus(msg) {
+  document.getElementById('status-bar').textContent = msg ? `⚠ ${msg}` : '';
+}
+
+function showLoading() {
+  document.getElementById('board-content').innerHTML = '<div class="loading"><span></span><span></span><span></span></div>';
+}
+
+function showIdle() {
+  document.getElementById('board-content').innerHTML = '<div class="idle-title">What shall I write?</div><div class="idle-hint">Use text, voice, or image. Say "erase" to clear the board.</div>';
+}
+
+function renderLatex(latex) {
+  try { return katex.renderToString(latex, { displayMode: true, throwOnError: false, strict: false }); }
+  catch { return `<span style="color:rgba(255,150,150,.8);font-size:14px">${latex}</span>`; }
+}
+
+function buildEquationColumn(eq, i, key, isNew) {
+  const col = document.createElement('div');
+  col.className = `eq-row ${isNew ? 'new' : 'reused'}`;
+  col.dataset.key = key;
+
+  if (eq.label) {
+    const lbl = document.createElement('div');
+    lbl.className = 'eq-label';
+    lbl.textContent = eq.label;
+    col.appendChild(lbl);
+  }
+
+  const math = document.createElement('div');
+  math.className = `eq-math sz-${eq.size || 'large'}`;
+  math.innerHTML = renderLatex(eq.latex || '');
+  col.appendChild(math);
+
+  if (isNew) {
+    const hand = document.createElement('div');
+    hand.className = 'hand';
+    col.appendChild(hand);
+  }
+
+  return col;
+}
+
+function capturePositions(root) {
+  const map = new Map();
+  root.querySelectorAll('.eq-row[data-key]').forEach(el => {
+    map.set(el.dataset.key, el.getBoundingClientRect());
+  });
+  return map;
+}
+
+function spawnGhost(rect, sourceEl) {
+  const board = document.getElementById('board-content');
+  const boardRect = board.getBoundingClientRect();
+  const ghost = sourceEl.cloneNode(true);
+  ghost.classList.remove('new', 'reused');
+  ghost.classList.add('ghost-eq');
+  ghost.style.left = `${rect.left - boardRect.left}px`;
+  ghost.style.top = `${rect.top - boardRect.top}px`;
+  ghost.style.width = `${rect.width}px`;
+  ghost.style.height = `${rect.height}px`;
+  board.appendChild(ghost);
+  setTimeout(() => ghost.remove(), 550);
+}
+
+function animateEraseSweep() {
+  const board = document.getElementById('board-content');
+  const sweep = document.createElement('div');
+  sweep.className = 'erase-sweep';
+  board.appendChild(sweep);
+  setTimeout(() => sweep.remove(), 500);
+}
+
+function paint(nextData) {
+  const el = document.getElementById('board-content');
+
+  if (nextData.action === 'erase') {
+    animateEraseSweep();
+    setTimeout(showIdle, 230);
+    boardState = { title: '', equations: [], notes: [] };
+    return;
+  }
+
+  const prevRows = Array.from(el.querySelectorAll('.eq-row[data-key]'));
+  const prevByKey = new Map(prevRows.map(node => [node.dataset.key, node]));
+  const prevPositions = capturePositions(el);
+
+  const title = nextData.title || '';
+  const equations = (nextData.equations || []).slice(0, 4);
+  const notes = (nextData.notes || []).slice(0, 4);
+
+  const strip = document.createElement('div');
+  strip.className = 'eq-strip';
+
+  equations.forEach((eq, i) => {
+    const key = makeEqKey(eq, i);
+    const reused = prevByKey.has(key);
+    if (i > 0) {
+      const div = document.createElement('div');
+      div.className = 'eq-divider';
+      strip.appendChild(div);
+    }
+    strip.appendChild(buildEquationColumn(eq, i, key, !reused));
+  });
+
+  const notesEl = document.createElement('div');
+  notesEl.className = 'notes-area';
+  notes.forEach((n, i) => {
+    const note = document.createElement('div');
+    note.className = 'note';
+    note.style.animationDelay = `${Math.min(i * 80, 280)}ms`;
+    note.textContent = n;
+    notesEl.appendChild(note);
+  });
+
+  el.innerHTML = '';
+  const t = document.createElement('div');
+  t.className = 'eq-title';
+  t.textContent = title;
+  el.appendChild(t);
+  el.appendChild(strip);
+  el.appendChild(notesEl);
+
+  const nextRows = Array.from(el.querySelectorAll('.eq-row[data-key]'));
+
+  nextRows.forEach(row => {
+    const key = row.dataset.key;
+    const from = prevPositions.get(key);
+    if (!from) return;
+    const to = row.getBoundingClientRect();
+    const dx = from.left - to.left;
+    const dy = from.top - to.top;
+    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+      row.style.transform = `translate(${dx}px, ${dy}px)`;
+      row.style.opacity = '0.9';
+      row.getBoundingClientRect();
+      row.style.transform = 'translate(0, 0)';
+      row.style.opacity = '1';
+    }
+  });
+
+  prevByKey.forEach((node, key) => {
+    if (!nextRows.find(r => r.dataset.key === key)) {
+      const rect = prevPositions.get(key);
+      if (rect) spawnGhost(rect, node);
+    }
+  });
+
+  boardState = { title, equations, notes };
+}
+
+function safeParseModelJSON(raw) {
+  const cleaned = raw.replace(/```json|```/g, '').trim();
+  const firstBrace = cleaned.indexOf('{');
+  const lastBrace = cleaned.lastIndexOf('}');
+  const jsonSlice = firstBrace >= 0 && lastBrace > firstBrace ? cleaned.slice(firstBrace, lastBrace + 1) : cleaned;
+  return JSON.parse(jsonSlice);
+}
+
+async function transcribeAudio(blob, key) {
+  const form = new FormData();
+  form.append('file', blob, 'prompt.webm');
+  form.append('model', 'whisper-1');
+
+  const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + key },
+    body: form,
+  });
+
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.error?.message || 'Audio transcription failed.');
+  }
+  const data = await res.json();
+  return (data.text || '').trim();
+}
+
+async function readImageAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('Could not read image file.'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function fetchBoard({ query, imageDataURL, key }) {
+  const userParts = [];
+  if (query) userParts.push({ type: 'text', text: query });
+  if (imageDataURL) userParts.push({ type: 'image_url', image_url: { url: imageDataURL } });
+
+  const contextText = boardState.equations.length
+    ? `Current board equations:\n${boardState.equations.map((eq, i) => `${i + 1}) ${eq.label || 'eq'}: ${eq.latex || ''}`).join('\n')}`
+    : 'Current board is empty.';
+
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + key,
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      temperature: 0.2,
+      max_tokens: 1000,
+      messages: [
+        { role: 'system', content: SYSTEM },
+        { role: 'assistant', content: contextText },
+        { role: 'user', content: userParts.length ? userParts : [{ type: 'text', text: 'erase' }] },
+      ],
+    }),
+  });
+
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.error?.message || res.statusText);
+  }
+
+  const payload = await res.json();
+  const raw = payload.choices?.[0]?.message?.content || '{}';
+  const parsed = safeParseModelJSON(raw);
+  if (!parsed.action) parsed.action = 'write';
+  return parsed;
+}
+
+async function go() {
+  const key = document.getElementById('apikey').value.trim();
+  const input = document.getElementById('req');
+  const imageInput = document.getElementById('image');
+  const query = input.value.trim();
+  const goBtn = document.getElementById('go-btn');
+
+  if (!key) {
+    setStatus('Paste your OpenAI API key first.');
+    return;
+  }
+
+  let transcript = '';
+  let imageDataURL = null;
+  const imageFile = imageInput.files?.[0];
+
+  goBtn.disabled = true;
+  showLoading();
+  setStatus('');
+
+  try {
+    if (recordedAudioBlob) transcript = await transcribeAudio(recordedAudioBlob, key);
+    if (imageFile) imageDataURL = await readImageAsDataURL(imageFile);
+
+    const mergedQuery = [query, transcript].filter(Boolean).join('\n');
+    if (!mergedQuery && !imageDataURL) {
+      showIdle();
+      setStatus('Provide at least one input: text, voice, or image.');
+      return;
+    }
+
+    const boardData = await fetchBoard({ query: mergedQuery, imageDataURL, key });
+    paint(boardData);
+
+    recordedAudioBlob = null;
+    document.getElementById('voice-chip').textContent = 'No audio captured';
+    imageInput.value = '';
+    document.getElementById('image-chip').textContent = 'No image selected';
+    input.value = '';
+  } catch (err) {
+    showIdle();
+    setStatus(err.message || 'Something went wrong.');
+    console.error(err);
+  } finally {
+    goBtn.disabled = false;
+    input.focus();
+  }
+}
+
+async function toggleRecording() {
+  const micBtn = document.getElementById('mic-btn');
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    mediaRecorder.stop();
+    micBtn.textContent = '🎙 Record';
+    return;
+  }
+
+  if (!navigator.mediaDevices?.getUserMedia) {
+    setStatus('Microphone recording is not supported in this browser.');
+    return;
+  }
+
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  recordedChunks = [];
+  mediaRecorder = new MediaRecorder(stream);
+
+  mediaRecorder.ondataavailable = evt => { if (evt.data.size > 0) recordedChunks.push(evt.data); };
+  mediaRecorder.onstop = () => {
+    recordedAudioBlob = new Blob(recordedChunks, { type: 'audio/webm' });
+    document.getElementById('voice-chip').textContent = 'Audio captured ✓';
+    setStatus('Audio captured. Click ✎ Write.');
+    stream.getTracks().forEach(track => track.stop());
+  };
+
+  mediaRecorder.start();
+  micBtn.textContent = '■ Stop';
+  setStatus('Recording… click ■ Stop when done.');
+}
+
+function setupResizer() {
+  const frame = document.getElementById('frame');
+  const handle = document.getElementById('resize-handle');
+  let startX = 0, startY = 0, startW = 0, startH = 0;
+
+  handle.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    startX = e.clientX; startY = e.clientY;
+    const rect = frame.getBoundingClientRect();
+    startW = rect.width; startH = rect.height;
+
+    const onMove = evt => {
+      const nextW = Math.max(520, Math.min(window.innerWidth - 20, startW + (evt.clientX - startX)));
+      const nextH = Math.max(460, Math.min(window.innerHeight - 20, startH + (evt.clientY - startY)));
+      frame.style.width = `${nextW}px`;
+      frame.style.height = `${nextH}px`;
+    };
+
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  });
+}
+
+document.getElementById('go-btn').addEventListener('click', go);
+document.getElementById('erase-btn').addEventListener('click', () => {
+  recordedAudioBlob = null;
+  document.getElementById('voice-chip').textContent = 'No audio captured';
+  document.getElementById('image').value = '';
+  document.getElementById('image-chip').textContent = 'No image selected';
+  document.getElementById('req').value = '';
+  animateEraseSweep();
+  setTimeout(showIdle, 220);
+  boardState = { title: '', equations: [], notes: [] };
+  setStatus('');
+});
+document.getElementById('mic-btn').addEventListener('click', () => toggleRecording().catch(err => setStatus(err.message || 'Microphone error.')));
+document.getElementById('image').addEventListener('change', e => {
+  const name = e.target.files?.[0]?.name;
+  document.getElementById('image-chip').textContent = name ? `Selected: ${name}` : 'No image selected';
+});
+document.getElementById('req').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+setupResizer();
+</script>
+</body>
+</html>

@@ -19,6 +19,9 @@ Interactive chalkboard + chat experience with **text, voice, and image input**.
 - Animated chalk effects for writing, moving/reusing, and erasing equations.
 - LaTeX normalization step to recover common escaped-command artifacts before KaTeX rendering.
 - Optional synthesized chalk/eraser noise effects on write/erase interactions.
+- Drawing tool, shape placement tool, and sticky-note placement on the infinite board.
+- Settings modal for sound volume, equation color, draw color, and default shape type.
+- Erase confirmation prompt before clearing all board artifacts.
 
 ## Project structure
 

@@ -7,9 +7,14 @@ let panStartY = 0;
 let basePanX = 0;
 let basePanY = 0;
 let audioCtx = null;
+let drawCurrentPath = null;
 
 export function setStatus(msg) {
   el.status.textContent = msg ? `⚠ ${msg}` : '';
+}
+
+export function setToolMode(mode) {
+  boardState.tools.mode = mode;
 }
 
 export function showLoading() {
@@ -103,7 +108,7 @@ export function playChalkNoise(duration = 0.18) {
     hp.frequency.value = 1300;
     const gain = ctx.createGain();
     gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.08, now + 0.015);
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.001, 0.08 * boardState.settings.volume), now + 0.015);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
 
     noise.connect(hp).connect(gain).connect(ctx.destination);
@@ -131,7 +136,7 @@ export function playEraserNoise(duration = 0.28) {
     bp.Q.value = 0.8;
     const gain = ctx.createGain();
     gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.1, now + 0.03);
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.001, 0.1 * boardState.settings.volume), now + 0.03);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
 
     noise.connect(bp).connect(gain).connect(ctx.destination);
@@ -193,6 +198,100 @@ function renderItem(item) {
   return wrapper;
 }
 
+function renderShapesAndNotes() {
+  // Shapes
+  boardState.shapes.forEach(shape => {
+    const node = document.createElement('div');
+    node.className = 'user-shape';
+    node.style.left = `${shape.x + boardState.panX}px`;
+    node.style.top = `${shape.y + boardState.panY}px`;
+    node.style.width = `${shape.w}px`;
+    node.style.height = `${shape.h}px`;
+    node.style.border = `2px solid ${shape.color}`;
+
+    if (shape.type === 'circle') node.style.borderRadius = '50%';
+    else if (shape.type === 'triangle') {
+      node.style.width = '0';
+      node.style.height = '0';
+      node.style.borderLeft = `${shape.w / 2}px solid transparent`;
+      node.style.borderRight = `${shape.w / 2}px solid transparent`;
+      node.style.borderBottom = `${shape.h}px solid ${shape.color}`;
+      node.style.borderTop = '0';
+      node.style.borderRadius = '0';
+    } else if (shape.type === 'line') {
+      node.style.height = '2px';
+      node.style.background = shape.color;
+      node.style.border = 'none';
+    }
+
+    el.boardContent.appendChild(node);
+  });
+
+  // Sticky notes
+  boardState.stickyNotes.forEach(note => {
+    const n = document.createElement('div');
+    n.className = 'sticky-note';
+    n.style.left = `${note.x + boardState.panX}px`;
+    n.style.top = `${note.y + boardState.panY}px`;
+    n.textContent = note.text;
+    n.dataset.noteId = String(note.id);
+    makeStickyDraggable(n, note);
+    el.boardContent.appendChild(n);
+  });
+}
+
+function renderDrawLayer() {
+  const w = el.board.clientWidth;
+  const h = el.board.clientHeight;
+  el.drawLayer.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  el.drawLayer.setAttribute('width', String(w));
+  el.drawLayer.setAttribute('height', String(h));
+  el.drawLayer.innerHTML = '';
+
+  for (const path of boardState.drawPaths) {
+    if (!path.points.length) continue;
+    const pts = path.points
+      .map(p => `${(p.x + boardState.panX).toFixed(1)},${(p.y + boardState.panY).toFixed(1)}`)
+      .join(' ');
+    const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    poly.setAttribute('points', pts);
+    poly.setAttribute('fill', 'none');
+    poly.setAttribute('stroke', path.color);
+    poly.setAttribute('stroke-width', '2.4');
+    poly.setAttribute('stroke-linecap', 'round');
+    poly.setAttribute('stroke-linejoin', 'round');
+    el.drawLayer.appendChild(poly);
+  }
+}
+
+function makeStickyDraggable(node, note) {
+  node.addEventListener('pointerdown', evt => {
+    if (boardState.tools.mode !== 'pan') return;
+    evt.stopPropagation();
+    const startX = evt.clientX;
+    const startY = evt.clientY;
+    const baseX = note.x;
+    const baseY = note.y;
+    node.setPointerCapture(evt.pointerId);
+
+    const move = moveEvt => {
+      note.x = baseX + (moveEvt.clientX - startX);
+      note.y = baseY + (moveEvt.clientY - startY);
+      renderBoard();
+    };
+
+    const up = () => {
+      node.removeEventListener('pointermove', move);
+      node.removeEventListener('pointerup', up);
+      node.removeEventListener('pointercancel', up);
+    };
+
+    node.addEventListener('pointermove', move);
+    node.addEventListener('pointerup', up);
+    node.addEventListener('pointercancel', up);
+  });
+}
+
 export function renderBoard() {
   el.boardContent.innerHTML = '';
 
@@ -212,6 +311,7 @@ export function renderBoard() {
   boardState.items.forEach(item => {
     el.boardContent.appendChild(renderItem(item));
   });
+  renderShapesAndNotes();
 
   const marker = document.createElement('div');
   marker.className = 'write-marker';
@@ -219,6 +319,7 @@ export function renderBoard() {
   marker.style.top = `${boardState.nextWriteY + boardState.panY}px`;
   marker.title = 'Next write position';
   el.boardContent.appendChild(marker);
+  renderDrawLayer();
 }
 
 export function animateEraseSweep() {
@@ -260,6 +361,44 @@ export function initBoardNavigation() {
 
   el.board.addEventListener('pointerdown', evt => {
     if (evt.button !== 0) return;
+    const rect = el.board.getBoundingClientRect();
+    const worldX = evt.clientX - rect.left - boardState.panX;
+    const worldY = evt.clientY - rect.top - boardState.panY;
+
+    if (boardState.tools.mode === 'shape') {
+      boardState.shapes.push({
+        id: Date.now() + Math.random(),
+        type: boardState.tools.shapeType,
+        x: worldX,
+        y: worldY,
+        w: 90,
+        h: 70,
+        color: boardState.settings.drawColor,
+      });
+      playChalkNoise(0.12);
+      renderBoard();
+      return;
+    }
+
+    if (boardState.tools.mode === 'sticky') {
+      const text = prompt('Sticky note text:', 'Remember this') || 'Note';
+      boardState.stickyNotes.push({ id: Date.now() + Math.random(), x: worldX, y: worldY, text });
+      playChalkNoise(0.08);
+      renderBoard();
+      return;
+    }
+
+    if (boardState.tools.mode === 'draw') {
+      drawCurrentPath = {
+        id: Date.now() + Math.random(),
+        color: boardState.settings.drawColor,
+        points: [{ x: worldX, y: worldY }],
+      };
+      boardState.drawPaths.push(drawCurrentPath);
+      renderBoard();
+      return;
+    }
+
     isPanning = true;
     panStartX = evt.clientX;
     panStartY = evt.clientY;
@@ -269,6 +408,14 @@ export function initBoardNavigation() {
   });
 
   el.board.addEventListener('pointermove', evt => {
+    if (drawCurrentPath && boardState.tools.mode === 'draw') {
+      const rect = el.board.getBoundingClientRect();
+      const worldX = evt.clientX - rect.left - boardState.panX;
+      const worldY = evt.clientY - rect.top - boardState.panY;
+      drawCurrentPath.points.push({ x: worldX, y: worldY });
+      renderDrawLayer();
+      return;
+    }
     if (!isPanning) return;
     boardState.panX = basePanX + (evt.clientX - panStartX);
     boardState.panY = basePanY + (evt.clientY - panStartY);
@@ -277,6 +424,12 @@ export function initBoardNavigation() {
   });
 
   const finishPan = () => {
+    if (drawCurrentPath) {
+      drawCurrentPath = null;
+      playChalkNoise(0.1);
+      renderDrawLayer();
+      return;
+    }
     if (!isPanning) return;
     isPanning = false;
     updateNextWriteFromCenter();

@@ -1,2 +1,48 @@
 # AI-Blackboard
-LLM specialized for working in a virtual blackboard, so that by user input (prompts, could be audio, text, or images) the blackboard changes dynamically and in real tim
+
+Interactive chalkboard + chat experience with **text, voice, and image input**.
+
+## What's new
+
+- ChatGPT-style conversational area with user/assistant messages.
+- **Conversational mode** (hands-free): click once to enable, then speak naturally.
+- The app listens, detects when you stop talking, transcribes, updates the board, and replies in chat automatically.
+
+## Features
+
+- LLM action routing via structured JSON:
+  - `write` → render/update equations and notes.
+  - `erase` → clear the board.
+- Dynamic board resize: drag the bottom-right handle or use width/height sliders.
+- Animated chalk effects for writing, moving/reusing, and erasing equations.
+
+## Project structure
+
+```text
+index.html
+src/
+  styles/main.css
+  scripts/
+    app.js        # app bootstrap + conversational flow
+    api.js        # OpenAI calls + JSON parsing
+    audio.js      # silence-detection recording + transcription
+    config.js     # system prompt + schema + model constants
+    dom.js        # centralized DOM refs
+    resizer.js    # drag + slider size controls
+    state.js      # shared board/app state
+    ui.js         # board rendering + transitions
+```
+
+## Run locally
+
+1. Open `index.html` in your browser (or serve the folder with any static server).
+2. Paste your OpenAI API key.
+3. Either:
+   - Type a message and press **Send**, or
+   - Turn on **Conversational mode** and just talk.
+
+## Notes
+
+- Audio is transcribed with `whisper-1`.
+- This demo calls OpenAI APIs directly from the browser.
+- For production use, proxy API calls through a backend to protect API keys.

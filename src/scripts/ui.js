@@ -20,11 +20,35 @@ export function showIdle() {
 }
 
 function renderLatex(latex) {
+  const normalized = normalizeLatex(latex);
   try {
-    return katex.renderToString(latex, { displayMode: true, throwOnError: false, strict: false });
+    return katex.renderToString(normalized, { displayMode: true, throwOnError: false, strict: false });
   } catch {
-    return `<span style="color:rgba(255,150,150,.8);font-size:14px">${latex}</span>`;
+    return `<span style="color:rgba(255,150,150,.8);font-size:14px">${normalized}</span>`;
   }
+}
+
+function normalizeLatex(input) {
+  let s = String(input || '');
+
+  // JSON escape side effects: \t, \f, \b can become control chars and break commands.
+  s = s
+    .replace(/\text\{/g, '\\text{')   // tab + ext{
+    .replace(/\frac\{/g, '\\frac{')   // formfeed + rac{
+    .replace(/\beta\b/g, '\\beta')    // backspace + eta
+    .replace(/\rho\b/g, '\\rho');     // carriage-return + ho
+
+  // Strip remaining control chars that would confuse KaTeX rendering.
+  s = s.replace(/[\u0000-\u001f]/g, '');
+
+  // Recover common commands when the leading slash was dropped.
+  const cmds = ['text', 'frac', 'cos', 'sin', 'tan', 'theta', 'alpha', 'beta', 'gamma', 'pi', 'sqrt', 'left', 'right', 'cdot'];
+  for (const cmd of cmds) {
+    const re = new RegExp(`(^|[^\\\\])${cmd}(?=[\\s\\{\\(])`, 'g');
+    s = s.replace(re, `$1\\\\${cmd}`);
+  }
+
+  return s;
 }
 
 function renderItem(item) {

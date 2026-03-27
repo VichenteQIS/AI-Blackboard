@@ -1,14 +1,32 @@
-import { CHAT_MODEL, SYSTEM_PROMPT } from './config.js';
+import { CHAT_MODEL, RESPONSE_SCHEMA, SYSTEM_PROMPT } from './config.js';
 import { boardState } from './state.js';
 
-function safeParseModelJSON(raw) {
+function sliceJSONObject(raw) {
   const cleaned = raw.replace(/```json|```/g, '').trim();
   const firstBrace = cleaned.indexOf('{');
   const lastBrace = cleaned.lastIndexOf('}');
-  const jsonSlice = firstBrace >= 0 && lastBrace > firstBrace
+  return firstBrace >= 0 && lastBrace > firstBrace
     ? cleaned.slice(firstBrace, lastBrace + 1)
     : cleaned;
-  return JSON.parse(jsonSlice);
+}
+
+function escapeInvalidBackslashes(jsonText) {
+  // Convert lone backslashes in strings (often from LaTeX) into escaped backslashes.
+  return jsonText.replace(/\\(?!["\\/bfnrtu])/g, '\\\\');
+}
+
+function safeParseModelJSON(raw) {
+  const jsonSlice = sliceJSONObject(raw);
+
+  try {
+    return JSON.parse(jsonSlice);
+  } catch (firstError) {
+    try {
+      return JSON.parse(escapeInvalidBackslashes(jsonSlice));
+    } catch {
+      throw firstError;
+    }
+  }
 }
 
 export async function readImageAsDataURL(file) {
@@ -23,12 +41,13 @@ export async function readImageAsDataURL(file) {
 
 export async function fetchBoard({ query, imageDataURL, key }) {
   const userParts = [];
-  if (query) userParts.push({ type: 'text', text: query });
   if (imageDataURL) userParts.push({ type: 'image_url', image_url: { url: imageDataURL } });
 
   const contextText = boardState.equations.length
     ? `Current board equations:\n${boardState.equations.map((eq, i) => `${i + 1}) ${eq.label || 'eq'}: ${eq.latex || ''}`).join('\n')}`
     : 'Current board is empty.';
+  const instructionText = `Board context:\n${contextText}\n\nUser request:\n${query || 'erase'}\n\nIf the user is iterating, update existing equations rather than replacing unrelated content.`;
+  userParts.unshift({ type: 'text', text: instructionText });
 
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -40,10 +59,13 @@ export async function fetchBoard({ query, imageDataURL, key }) {
       model: CHAT_MODEL,
       temperature: 0.2,
       max_tokens: 1000,
+      response_format: {
+        type: 'json_schema',
+        json_schema: RESPONSE_SCHEMA,
+      },
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'assistant', content: contextText },
-        { role: 'user', content: userParts.length ? userParts : [{ type: 'text', text: 'erase' }] },
+        { role: 'user', content: userParts },
       ],
     }),
   });

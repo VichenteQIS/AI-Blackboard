@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Blackboard</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap" rel="stylesheet" />
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; background:#191209; display:flex; align-items:center; justify-content:center; padding:16px; font-family:'Caveat',cursive; }
 
-.frame { width:min(96vw,980px); height:min(90vh,680px); min-width:520px; min-height:460px; max-width:1200px; max-height:92vh; background:#3b1f09; border-radius:4px; box-shadow:inset 0 1px 0 rgba(255,210,120,.15), inset 0 -1px 0 rgba(0,0,0,.5), 0 20px 70px rgba(0,0,0,.85), 0 2px 6px rgba(0,0,0,.6); position:relative; padding:18px 18px 12px; display:flex; flex-direction:column; gap:10px; resize:both; overflow:hidden; }
+.frame { width:min(96vw,980px); height:min(90vh,680px); min-width:520px; min-height:460px; max-width:1200px; max-height:92vh; background:#3b1f09; border-radius:4px; box-shadow:inset 0 1px 0 rgba(255,210,120,.15), inset 0 -1px 0 rgba(0,0,0,.5), 0 20px 70px rgba(0,0,0,.85), 0 2px 6px rgba(0,0,0,.6); position:relative; padding:18px 18px 12px; display:flex; flex-direction:column; gap:10px; }
 .frame::before { content:''; position:absolute; inset:0; border-radius:4px; background:repeating-linear-gradient(88deg,transparent 0,rgba(0,0,0,.04) 1px,transparent 2px,transparent 10px); pointer-events:none; }
 .screw { position:absolute; width:10px; height:10px; border-radius:50%; background:radial-gradient(circle at 35% 35%,#a07040,#3a1e06); box-shadow:inset 0 1px 2px rgba(0,0,0,.6); }
 .screw.tl{top:8px;left:8px}.screw.tr{top:8px;right:8px}.screw.bl{bottom:8px;left:8px}.screw.br{bottom:8px;right:8px}
@@ -54,20 +54,205 @@ html, body { height: 100%; background:#191209; display:flex; align-items:center;
 .loading span:nth-child(2){animation-delay:.2s}.loading span:nth-child(3){animation-delay:.4s}
 @keyframes dot{0%,100%{transform:scale(.55);opacity:.3}50%{transform:scale(1);opacity:.9}}
 
-.controls{background:linear-gradient(180deg,#2a1206 0%,#1c0d04 100%);border-top:2px solid rgba(0,0,0,.5);padding:10px 12px;display:grid;gap:8px;font-family:'Inter',system-ui,-apple-system,sans-serif}
+.controls{background:linear-gradient(180deg,#2a1206 0%,#1c0d04 100%);border-top:2px solid rgba(0,0,0,.5);padding:10px 12px;display:grid;gap:8px}
 .control-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.control-label{color:rgba(255,252,228,.55);font-size:14px;font-weight:600;min-width:62px}
-input[type="text"],input[type="password"],input[type="file"]{background:rgba(0,0,0,.1);border:1px solid rgba(255,252,200,.2);color:rgba(255,252,228,.9);font-family:'Inter',system-ui,-apple-system,sans-serif;border-radius:3px;padding:6px 8px}
-input[type="text"]{flex:1;min-width:240px;font-size:16px}input[type="password"]{width:240px;font-size:14px}input[type="file"]{max-width:320px;font-size:13px}
-button{background:rgba(255,252,200,.08);border:1px solid rgba(255,252,200,.18);color:rgba(255,252,228,.84);font-family:'Inter',system-ui,-apple-system,sans-serif;font-size:15px;border-radius:3px;padding:8px 12px;cursor:pointer}
+.control-label{color:rgba(255,252,228,.55);font-size:16px;min-width:54px}
+input[type="text"],input[type="password"],input[type="file"]{background:rgba(0,0,0,.1);border:1px solid rgba(255,252,200,.2);color:rgba(255,252,228,.9);font-family:'Caveat',cursive;border-radius:3px;padding:6px 8px}
+input[type="text"]{flex:1;min-width:240px;font-size:20px}input[type="password"]{width:240px;font-size:16px}input[type="file"]{max-width:320px;font-size:14px}
+button{background:rgba(255,252,200,.08);border:1px solid rgba(255,252,200,.18);color:rgba(255,252,228,.84);font-family:'Caveat',cursive;font-size:17px;border-radius:3px;padding:8px 12px;cursor:pointer}
 button:hover:not(:disabled){background:rgba(255,252,200,.18);color:#fff}button:disabled{opacity:.4;cursor:not-allowed}
 #status-bar{color:rgba(255,160,160,.88);font-size:15px;min-height:18px}
 
-.size-input{width:180px}
-.size-val{font-size:12px;color:rgba(220,235,210,.8);min-width:54px}
-
 .resize-handle{position:absolute;right:3px;bottom:3px;width:22px;height:22px;cursor:nwse-resize;border-radius:2px;background:linear-gradient(135deg,transparent 0 45%,rgba(255,252,228,.25) 46% 52%,transparent 53% 100%),linear-gradient(135deg,transparent 0 62%,rgba(255,252,228,.25) 63% 69%,transparent 70% 100%),linear-gradient(135deg,transparent 0 78%,rgba(255,252,228,.25) 79% 85%,transparent 86% 100%)}
 @media (max-width:720px){.frame{min-width:100%;height:94vh}input[type="password"],input[type="text"],input[type="file"]{width:100%;min-width:0}}
+
+html, body {
+  height: 100%;
+  background: #191209;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  font-family: 'Caveat', cursive;
+}
+
+.frame {
+  width: min(96vw, 980px);
+  height: min(90vh, 680px);
+  min-width: 520px;
+  min-height: 460px;
+  max-width: 1200px;
+  max-height: 92vh;
+  background: #3b1f09;
+  border-radius: 4px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,210,120,.15),
+    inset 0 -1px 0 rgba(0,0,0,.5),
+    0 20px 70px rgba(0,0,0,.85),
+    0 2px 6px rgba(0,0,0,.6);
+  position: relative;
+  padding: 18px 18px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  background: repeating-linear-gradient(88deg, transparent 0, rgba(0,0,0,.04) 1px, transparent 2px, transparent 10px);
+  pointer-events: none;
+}
+
+.screw {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #a07040, #3a1e06);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.6);
+}
+.screw.tl { top: 8px; left: 8px; }
+.screw.tr { top: 8px; right: 8px; }
+.screw.bl { bottom: 8px; left: 8px; }
+.screw.br { bottom: 8px; right: 8px; }
+
+.board {
+  flex: 1;
+  background: #243d2f;
+  position: relative;
+  overflow: hidden;
+  border: 1.5px solid rgba(0,0,0,.5);
+  box-shadow: inset 0 0 80px rgba(0,0,0,.25);
+  min-height: 220px;
+}
+
+.board::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: linear-gradient(rgba(255,255,255,.012) 1px, transparent 1px);
+  background-size: 100% 46px;
+}
+
+.board::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 30% at 15% 20%, rgba(255,255,255,.018) 0%, transparent 100%),
+    radial-gradient(ellipse 40% 20% at 85% 75%, rgba(255,255,255,.012) 0%, transparent 100%),
+    radial-gradient(ellipse 30% 15% at 50% 50%, rgba(255,255,255,.008) 0%, transparent 100%);
+}
+
+#board-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.eq-title { font-size: 28px; font-weight: 700; color: rgba(255,252,228,.85); text-align: center; margin-bottom: 16px; }
+.eq-strip { display: flex; align-items: center; justify-content: center; width: 100%; }
+.eq-row { flex: 1; padding: 0 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.eq-label { font-size: 14px; color: rgba(220,240,200,.45); margin-bottom: 6px; }
+.eq-math { color: rgba(255,252,228,.88); text-align: center; }
+.eq-math.sz-large { font-size: 2rem; }
+.eq-math.sz-medium { font-size: 1.35rem; color: rgba(255,252,228,.78); }
+.eq-math.sz-small { font-size: 1rem; color: rgba(255,252,228,.65); }
+.eq-math .katex, .eq-math .katex * { color: inherit !important; }
+.eq-divider { width: 1px; height: 90px; background: rgba(255,252,200,.12); }
+
+.notes-area { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
+.note { font-size: 16px; color: rgba(190,230,195,.72); border-left: 2px solid rgba(190,230,195,.25); padding: 2px 10px; }
+
+.idle-title { font-size: 32px; color: rgba(255,252,228,.38); text-align: center; margin-bottom: 10px; }
+.idle-hint { font-size: 17px; color: rgba(255,252,228,.26); text-align: center; }
+
+.loading { display: flex; gap: 10px; align-items: center; justify-content: center; height: 100%; }
+.loading span { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,252,220,.4); animation: dot 1.2s ease-in-out infinite both; }
+.loading span:nth-child(2){animation-delay:.2s}
+.loading span:nth-child(3){animation-delay:.4s}
+@keyframes dot { 0%,100% { transform: scale(.55); opacity: .3; } 50% { transform: scale(1); opacity:.9; } }
+
+.controls {
+  background: linear-gradient(180deg, #2a1206 0%, #1c0d04 100%);
+  border-top: 2px solid rgba(0,0,0,.5);
+  padding: 10px 12px;
+  display: grid;
+  gap: 8px;
+}
+.control-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.control-label {
+  color: rgba(255,252,228,.55);
+  font-size: 16px;
+  min-width: 54px;
+}
+
+input[type="text"], input[type="password"], input[type="file"] {
+  background: rgba(0,0,0,.1);
+  border: 1px solid rgba(255,252,200,.2);
+  color: rgba(255,252,228,.9);
+  font-family: 'Caveat', cursive;
+  border-radius: 3px;
+  padding: 6px 8px;
+}
+input[type="text"] { flex: 1; min-width: 240px; font-size: 20px; }
+input[type="password"] { width: 240px; font-size: 16px; }
+input[type="file"] { max-width: 320px; font-size: 14px; }
+
+button {
+  background: rgba(255,252,200,.08);
+  border: 1px solid rgba(255,252,200,.18);
+  color: rgba(255,252,228,.84);
+  font-family: 'Caveat', cursive;
+  font-size: 17px;
+  border-radius: 3px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+button:hover:not(:disabled) { background: rgba(255,252,200,.18); color: #fff; }
+button:disabled { opacity: .4; cursor: not-allowed; }
+
+#status-bar {
+  color: rgba(255,160,160,.88);
+  font-size: 15px;
+  min-height: 18px;
+}
+
+.resize-handle {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 22px;
+  height: 22px;
+  cursor: nwse-resize;
+  border-radius: 2px;
+  background:
+    linear-gradient(135deg, transparent 0 45%, rgba(255,252,228,.25) 46% 52%, transparent 53% 100%),
+    linear-gradient(135deg, transparent 0 62%, rgba(255,252,228,.25) 63% 69%, transparent 70% 100%),
+    linear-gradient(135deg, transparent 0 78%, rgba(255,252,228,.25) 79% 85%, transparent 86% 100%);
+}
+
+@media (max-width: 720px) {
+  .frame { min-width: 100%; height: 94vh; }
+  input[type="password"], input[type="text"], input[type="file"] { width: 100%; min-width: 0; }
+}
 </style>
 </head>
 <body>
@@ -75,6 +260,7 @@ button:hover:not(:disabled){background:rgba(255,252,200,.18);color:#fff}button:d
   <div class="screw tl"></div><div class="screw tr"></div><div class="screw bl"></div><div class="screw br"></div>
 
   <div class="board" id="board">
+  <div class="board">
     <div id="board-content">
       <div class="idle-title">What shall I write?</div>
       <div class="idle-hint">Use text, voice, or image. Say "erase" to clear the board.</div>
@@ -85,17 +271,31 @@ button:hover:not(:disabled){background:rgba(255,252,200,.18);color:#fff}button:d
     <div class="control-row"><span class="control-label">API Key</span><input id="apikey" type="password" placeholder="sk-..." autocomplete="off" /></div>
     <div class="control-row"><span class="control-label">Prompt</span><input id="req" type="text" placeholder="Type a concept, equation, or 'erase'" autocomplete="off" /><button id="go-btn">✎ Write</button><button id="erase-btn" title="Erase board">⌫ Erase</button></div>
     <div class="control-row"><span class="control-label">Voice</span><button id="mic-btn" title="Record audio">🎙 Record</button><span style="color:rgba(205,235,200,.75);font-size:15px" id="voice-chip">No audio captured</span></div>
-    <div class="control-row"><span class="control-label">Image</span><input id="image" type="file" accept="image/*" /><span style="color:rgba(205,235,200,.75);font-size:13px" id="image-chip">No image selected</span></div>
+    <div class="control-row"><span class="control-label">Image</span><input id="image" type="file" accept="image/*" /><span style="color:rgba(205,235,200,.75);font-size:15px" id="image-chip">No image selected</span></div>
     <div class="control-row">
-      <span class="control-label">Size</span>
-      <label style="font-size:12px;color:rgba(255,252,228,.75)">W</label>
-      <input id="w-range" class="size-input" type="range" min="520" max="1200" step="10" />
-      <span id="w-val" class="size-val"></span>
-      <label style="font-size:12px;color:rgba(255,252,228,.75)">H</label>
-      <input id="h-range" class="size-input" type="range" min="460" max="920" step="10" />
-      <span id="h-val" class="size-val"></span>
-      <button id="size-reset" type="button">Reset</button>
+      <span class="control-label">API Key</span>
+      <input id="apikey" type="password" placeholder="sk-..." autocomplete="off" />
     </div>
+
+    <div class="control-row">
+      <span class="control-label">Prompt</span>
+      <input id="req" type="text" placeholder="Type a concept, equation, or 'erase'" autocomplete="off" />
+      <button id="go-btn">✎ Write</button>
+      <button id="erase-btn" title="Erase board">⌫ Erase</button>
+    </div>
+
+    <div class="control-row">
+      <span class="control-label">Voice</span>
+      <button id="mic-btn" title="Record audio">🎙 Record</button>
+      <span style="color:rgba(205,235,200,.75);font-size:15px" id="voice-chip">No audio captured</span>
+    </div>
+
+    <div class="control-row">
+      <span class="control-label">Image</span>
+      <input id="image" type="file" accept="image/*" />
+      <span style="color:rgba(205,235,200,.75);font-size:15px" id="image-chip">No image selected</span>
+    </div>
+
     <div id="status-bar"></div>
   </div>
 
@@ -117,6 +317,7 @@ Respond ONLY with one JSON object in this exact schema:
 Rules:
 - If user intent is erase/wipe/clear board, return action="erase" and empty title/equations/notes.
 - Prefer reusing previously written equations when useful, only change what is needed.
+- Otherwise return action="write" with 1-4 equations and 1-3 notes.
 - latex must be valid KaTeX and must not use $ wrappers.
 - No markdown fences. JSON only.`;
 
@@ -131,6 +332,10 @@ function makeEqKey(eq, i) {
 
 function setStatus(msg) {
   document.getElementById('status-bar').textContent = msg ? `⚠ ${msg}` : '';
+
+function setStatus(msg) {
+  const el = document.getElementById('status-bar');
+  el.textContent = msg ? `⚠ ${msg}` : '';
 }
 
 function showLoading() {
@@ -219,6 +424,31 @@ function paint(nextData) {
   const title = nextData.title || '';
   const equations = (nextData.equations || []).slice(0, 4);
   const notes = (nextData.notes || []).slice(0, 4);
+  document.getElementById('board-content').innerHTML =
+    '<div class="idle-title">What shall I write?</div><div class="idle-hint">Use text, voice, or image. Say "erase" to clear the board.</div>';
+}
+
+function renderLatex(latex) {
+  try {
+    return katex.renderToString(latex, { displayMode: true, throwOnError: false, strict: false });
+  } catch {
+    return `<span style="color:rgba(255,150,150,.8);font-size:14px">${latex}</span>`;
+  }
+}
+
+function paint(data) {
+  if (data.action === 'erase') {
+    showIdle();
+    return;
+  }
+
+  const el = document.getElementById('board-content');
+  el.innerHTML = '';
+
+  const t = document.createElement('div');
+  t.className = 'eq-title';
+  t.textContent = data.title || '';
+  el.appendChild(t);
 
   const strip = document.createElement('div');
   strip.className = 'eq-strip';
@@ -278,6 +508,43 @@ function paint(nextData) {
   });
 
   boardState = { title, equations, notes };
+  (data.equations || []).forEach((eq, i) => {
+    if (i > 0) {
+      const divider = document.createElement('div');
+      divider.className = 'eq-divider';
+      strip.appendChild(divider);
+    }
+
+    const col = document.createElement('div');
+    col.className = 'eq-row';
+
+    if (eq.label) {
+      const lbl = document.createElement('div');
+      lbl.className = 'eq-label';
+      lbl.textContent = eq.label;
+      col.appendChild(lbl);
+    }
+
+    const math = document.createElement('div');
+    math.className = `eq-math sz-${eq.size || 'large'}`;
+    math.innerHTML = renderLatex(eq.latex || '');
+    col.appendChild(math);
+    strip.appendChild(col);
+  });
+
+  el.appendChild(strip);
+
+  if (data.notes?.length) {
+    const notes = document.createElement('div');
+    notes.className = 'notes-area';
+    data.notes.forEach(n => {
+      const note = document.createElement('div');
+      note.className = 'note';
+      note.textContent = n;
+      notes.appendChild(note);
+    });
+    el.appendChild(notes);
+  }
 }
 
 function safeParseModelJSON(raw) {
@@ -285,6 +552,9 @@ function safeParseModelJSON(raw) {
   const firstBrace = cleaned.indexOf('{');
   const lastBrace = cleaned.lastIndexOf('}');
   const jsonSlice = firstBrace >= 0 && lastBrace > firstBrace ? cleaned.slice(firstBrace, lastBrace + 1) : cleaned;
+  const jsonSlice = firstBrace >= 0 && lastBrace > firstBrace
+    ? cleaned.slice(firstBrace, lastBrace + 1)
+    : cleaned;
   return JSON.parse(jsonSlice);
 }
 
@@ -303,6 +573,7 @@ async function transcribeAudio(blob, key) {
     const e = await res.json().catch(() => ({}));
     throw new Error(e.error?.message || 'Audio transcription failed.');
   }
+
   const data = await res.json();
   return (data.text || '').trim();
 }
@@ -378,6 +649,13 @@ async function go() {
   try {
     if (recordedAudioBlob) transcript = await transcribeAudio(recordedAudioBlob, key);
     if (imageFile) imageDataURL = await readImageAsDataURL(imageFile);
+    if (recordedAudioBlob) {
+      transcript = await transcribeAudio(recordedAudioBlob, key);
+    }
+
+    if (imageFile) {
+      imageDataURL = await readImageAsDataURL(imageFile);
+    }
 
     const mergedQuery = [query, transcript].filter(Boolean).join('\n');
     if (!mergedQuery && !imageDataURL) {
@@ -406,6 +684,7 @@ async function go() {
 
 async function toggleRecording() {
   const micBtn = document.getElementById('mic-btn');
+
   if (mediaRecorder && mediaRecorder.state === 'recording') {
     mediaRecorder.stop();
     micBtn.textContent = '🎙 Record';
@@ -422,6 +701,10 @@ async function toggleRecording() {
   mediaRecorder = new MediaRecorder(stream);
 
   mediaRecorder.ondataavailable = evt => { if (evt.data.size > 0) recordedChunks.push(evt.data); };
+  mediaRecorder.ondataavailable = evt => {
+    if (evt.data.size > 0) recordedChunks.push(evt.data);
+  };
+
   mediaRecorder.onstop = () => {
     recordedAudioBlob = new Blob(recordedChunks, { type: 'audio/webm' });
     document.getElementById('voice-chip').textContent = 'Audio captured ✓';
@@ -444,6 +727,18 @@ function setupResizer() {
     startX = e.clientX; startY = e.clientY;
     const rect = frame.getBoundingClientRect();
     startW = rect.width; startH = rect.height;
+  let startX = 0;
+  let startY = 0;
+  let startW = 0;
+  let startH = 0;
+
+  handle.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    startX = e.clientX;
+    startY = e.clientY;
+    const rect = frame.getBoundingClientRect();
+    startW = rect.width;
+    startH = rect.height;
 
     const onMove = evt => {
       const nextW = Math.max(520, Math.min(window.innerWidth - 20, startW + (evt.clientX - startX)));
@@ -462,52 +757,6 @@ function setupResizer() {
   });
 }
 
-function setupSizeControls() {
-  const frame = document.getElementById('frame');
-  const wRange = document.getElementById('w-range');
-  const hRange = document.getElementById('h-range');
-  const wVal = document.getElementById('w-val');
-  const hVal = document.getElementById('h-val');
-  const resetBtn = document.getElementById('size-reset');
-
-  function clampRangesToViewport() {
-    wRange.max = String(Math.max(520, Math.min(1400, window.innerWidth - 20)));
-    hRange.max = String(Math.max(460, Math.min(1100, window.innerHeight - 20)));
-  }
-
-  function syncFromFrame() {
-    const rect = frame.getBoundingClientRect();
-    wRange.value = String(Math.round(rect.width));
-    hRange.value = String(Math.round(rect.height));
-    wVal.textContent = `${Math.round(rect.width)}px`;
-    hVal.textContent = `${Math.round(rect.height)}px`;
-  }
-
-  function applyRangeSize() {
-    frame.style.width = `${wRange.value}px`;
-    frame.style.height = `${hRange.value}px`;
-    syncFromFrame();
-  }
-
-  clampRangesToViewport();
-  syncFromFrame();
-  wRange.addEventListener('input', applyRangeSize);
-  hRange.addEventListener('input', applyRangeSize);
-  window.addEventListener('resize', () => {
-    clampRangesToViewport();
-    syncFromFrame();
-  });
-  resetBtn.addEventListener('click', () => {
-    frame.style.width = 'min(96vw,980px)';
-    frame.style.height = 'min(90vh,680px)';
-    requestAnimationFrame(syncFromFrame);
-  });
-
-  // keep sliders in sync with drag-resize
-  const observer = new ResizeObserver(syncFromFrame);
-  observer.observe(frame);
-}
-
 document.getElementById('go-btn').addEventListener('click', go);
 document.getElementById('erase-btn').addEventListener('click', () => {
   recordedAudioBlob = null;
@@ -518,6 +767,7 @@ document.getElementById('erase-btn').addEventListener('click', () => {
   animateEraseSweep();
   setTimeout(showIdle, 220);
   boardState = { title: '', equations: [], notes: [] };
+  showIdle();
   setStatus('');
 });
 document.getElementById('mic-btn').addEventListener('click', () => toggleRecording().catch(err => setStatus(err.message || 'Microphone error.')));
@@ -526,8 +776,8 @@ document.getElementById('image').addEventListener('change', e => {
   document.getElementById('image-chip').textContent = name ? `Selected: ${name}` : 'No image selected';
 });
 document.getElementById('req').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+
 setupResizer();
-setupSizeControls();
 </script>
 </body>
 </html>

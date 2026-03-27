@@ -12,29 +12,37 @@
 <div class="frame" id="frame">
   <div class="screw tl"></div><div class="screw tr"></div><div class="screw bl"></div><div class="screw br"></div>
 
+  <div class="top-bar">
+    <span class="app-title">AI Blackboard</span>
+    <input id="apikey" type="password" placeholder="OpenAI API key (sk-...)" autocomplete="off" />
+    <button id="auto-talk-btn" type="button">🎧 Conversational mode: Off</button>
+    <span id="voice-chip">Idle</span>
+  </div>
+
   <div class="board" id="board">
     <div id="board-content">
       <div class="idle-title">What shall I write?</div>
-      <div class="idle-hint">Use text, voice, or image. Say "erase" to clear the board.</div>
+      <div class="idle-hint">Talk naturally. I update the board when you pause.</div>
     </div>
   </div>
 
-  <div class="controls">
-    <div class="control-row"><span class="control-label">API Key</span><input id="apikey" type="password" placeholder="sk-..." autocomplete="off" /></div>
-    <div class="control-row"><span class="control-label">Prompt</span><input id="req" type="text" placeholder="Type a concept, equation, or 'erase'" autocomplete="off" /><button id="go-btn">✎ Write</button><button id="erase-btn" title="Erase board">⌫ Erase</button></div>
-    <div class="control-row"><span class="control-label">Voice</span><button id="mic-btn" title="Record audio">🎙 Record</button><span style="color:rgba(205,235,200,.75);font-size:15px" id="voice-chip">No audio captured</span></div>
-    <div class="control-row"><span class="control-label">Image</span><input id="image" type="file" accept="image/*" /><span style="color:rgba(205,235,200,.75);font-size:13px" id="image-chip">No image selected</span></div>
-    <div class="control-row">
-      <span class="control-label">Size</span>
-      <label style="font-size:12px;color:rgba(255,252,228,.75)">W</label>
-      <input id="w-range" class="size-input" type="range" min="520" max="1200" step="10" />
-      <span id="w-val" class="size-val"></span>
-      <label style="font-size:12px;color:rgba(255,252,228,.75)">H</label>
-      <input id="h-range" class="size-input" type="range" min="460" max="920" step="10" />
-      <span id="h-val" class="size-val"></span>
-      <button id="size-reset" type="button">Reset</button>
+  <div class="chat-shell">
+    <div id="chat-log" class="chat-log"></div>
+    <div class="chat-composer">
+      <input id="req" type="text" placeholder="Message Blackboard..." autocomplete="off" />
+      <input id="image" type="file" accept="image/*" />
+      <button id="go-btn">Send</button>
+      <button id="erase-btn" title="Erase board">Erase board</button>
     </div>
-    <div id="status-bar"></div>
+    <div class="chat-meta">
+      <span id="image-chip">No image selected</span>
+      <span id="status-bar"></span>
+      <label>W <input id="w-range" class="size-input" type="range" min="520" max="1200" step="10" /></label>
+      <span id="w-val" class="size-val"></span>
+      <label>H <input id="h-range" class="size-input" type="range" min="460" max="920" step="10" /></label>
+      <span id="h-val" class="size-val"></span>
+      <button id="size-reset" type="button">Reset size</button>
+    </div>
   </div>
 
   <div class="resize-handle" id="resize-handle" title="Drag to resize board"></div>

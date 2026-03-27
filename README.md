@@ -1,14 +1,18 @@
 # AI-Blackboard
 
-Interactive single-page chalkboard UI with **text, voice, and image inputs**.
+Interactive chalkboard + chat experience with **text, voice, and image input**.
+
+## What's new
+
+- ChatGPT-style conversational area with user/assistant messages.
+- **Conversational mode** (hands-free): click once to enable, then speak naturally.
+- The app listens, detects when you stop talking, transcribes, updates the board, and replies in chat automatically.
 
 ## Features
 
-- Visible input rows for API key, text prompt, voice recording, and image upload.
 - LLM action routing via structured JSON:
   - `write` → render/update equations and notes.
   - `erase` → clear the board.
-- JSON output is constrained with a schema and parser fallback to reduce LaTeX escaping errors.
 - Dynamic board resize: drag the bottom-right handle or use width/height sliders.
 - Animated chalk effects for writing, moving/reusing, and erasing equations.
 
@@ -17,28 +21,25 @@ Interactive single-page chalkboard UI with **text, voice, and image inputs**.
 ```text
 index.html
 src/
-  styles/
-    main.css
+  styles/main.css
   scripts/
-    app.js        # app bootstrap + event wiring
+    app.js        # app bootstrap + conversational flow
     api.js        # OpenAI calls + JSON parsing
-    audio.js      # recording + transcription
-    config.js     # model names + system prompt
+    audio.js      # silence-detection recording + transcription
+    config.js     # system prompt + schema + model constants
     dom.js        # centralized DOM refs
     resizer.js    # drag + slider size controls
     state.js      # shared board/app state
-    ui.js         # rendering + transitions
+    ui.js         # board rendering + transitions
 ```
 
 ## Run locally
 
 1. Open `index.html` in your browser (or serve the folder with any static server).
 2. Paste your OpenAI API key.
-3. Provide one or more inputs:
-   - Text prompt
-   - Voice recording
-   - Image upload
-4. Click **✎ Write**.
+3. Either:
+   - Type a message and press **Send**, or
+   - Turn on **Conversational mode** and just talk.
 
 ## Notes
 

@@ -1,10 +1,5 @@
 import { TRANSCRIBE_MODEL } from './config.js';
-import { el } from './dom.js';
 import { boardState } from './state.js';
-import { setStatus } from './ui.js';
-
-let mediaRecorder = null;
-let recordedChunks = [];
 
 export async function transcribeAudio(key) {
   if (!boardState.recordedAudioBlob) return '';
@@ -23,38 +18,72 @@ export async function transcribeAudio(key) {
     const e = await res.json().catch(() => ({}));
     throw new Error(e.error?.message || 'Audio transcription failed.');
   }
+
   const data = await res.json();
   return (data.text || '').trim();
 }
 
-export async function toggleRecording() {
-  if (mediaRecorder && mediaRecorder.state === 'recording') {
-    mediaRecorder.stop();
-    el.micBtn.textContent = '🎙 Record';
-    return;
-  }
-
-  if (!navigator.mediaDevices?.getUserMedia) {
-    setStatus('Microphone recording is not supported in this browser.');
-    return;
-  }
-
+export async function captureVoiceUntilSilence({ silenceMs = 1300, threshold = 0.015 } = {}) {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  recordedChunks = [];
-  mediaRecorder = new MediaRecorder(stream);
+  const mediaRecorder = new MediaRecorder(stream);
+  const chunks = [];
+
+  const audioContext = new AudioContext();
+  const source = audioContext.createMediaStreamSource(stream);
+  const analyser = audioContext.createAnalyser();
+  analyser.fftSize = 1024;
+  source.connect(analyser);
+  const data = new Uint8Array(analyser.fftSize);
+
+  let speakingDetected = false;
+  let silenceSince = null;
 
   mediaRecorder.ondataavailable = evt => {
-    if (evt.data.size > 0) recordedChunks.push(evt.data);
+    if (evt.data.size > 0) chunks.push(evt.data);
   };
 
-  mediaRecorder.onstop = () => {
-    boardState.recordedAudioBlob = new Blob(recordedChunks, { type: 'audio/webm' });
-    el.voiceChip.textContent = 'Audio captured ✓';
-    setStatus('Audio captured. Click ✎ Write.');
-    stream.getTracks().forEach(track => track.stop());
-  };
+  return await new Promise((resolve, reject) => {
+    const interval = setInterval(() => {
+      analyser.getByteTimeDomainData(data);
+      let sum = 0;
+      for (const v of data) {
+        const n = (v - 128) / 128;
+        sum += n * n;
+      }
+      const rms = Math.sqrt(sum / data.length);
 
-  mediaRecorder.start();
-  el.micBtn.textContent = '■ Stop';
-  setStatus('Recording… click ■ Stop when done.');
+      if (rms > threshold) {
+        speakingDetected = true;
+        silenceSince = null;
+      } else if (speakingDetected) {
+        silenceSince = silenceSince || Date.now();
+        if (Date.now() - silenceSince >= silenceMs && mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
+        }
+      }
+    }, 120);
+
+    mediaRecorder.onstop = async () => {
+      clearInterval(interval);
+      source.disconnect();
+      analyser.disconnect();
+      await audioContext.close();
+      stream.getTracks().forEach(track => track.stop());
+
+      boardState.recordedAudioBlob = new Blob(chunks, { type: 'audio/webm' });
+      resolve(boardState.recordedAudioBlob);
+    };
+
+    mediaRecorder.onerror = err => {
+      clearInterval(interval);
+      reject(err.error || new Error('MediaRecorder failed.'));
+    };
+
+    try {
+      mediaRecorder.start();
+    } catch (err) {
+      clearInterval(interval);
+      reject(err);
+    }
+  });
 }

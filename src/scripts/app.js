@@ -1,6 +1,6 @@
 import { el } from './dom.js';
 import { boardState, resetBoardState } from './state.js';
-import { paint, setStatus, showIdle, showLoading, animateEraseSweep } from './ui.js';
+import { paint, setStatus, showIdle, showLoading, animateEraseSweep, initBoardNavigation } from './ui.js';
 import { transcribeAudio, captureVoiceUntilSilence } from './audio.js';
 import { fetchBoard, readImageAsDataURL } from './api.js';
 import { setupResizer, setupSizeControls } from './resizer.js';
@@ -151,4 +151,5 @@ function wireEvents() {
 wireEvents();
 setupResizer();
 setupSizeControls();
+initBoardNavigation();
 addChatMessage('assistant', 'Hi! You can type, attach an image, or enable conversational mode and just talk.');

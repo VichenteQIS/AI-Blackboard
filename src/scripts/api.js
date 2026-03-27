@@ -43,8 +43,12 @@ export async function fetchBoard({ query, imageDataURL, key }) {
   const userParts = [];
   if (imageDataURL) userParts.push({ type: 'image_url', image_url: { url: imageDataURL } });
 
-  const contextText = boardState.equations.length
-    ? `Current board equations:\n${boardState.equations.map((eq, i) => `${i + 1}) ${eq.label || 'eq'}: ${eq.latex || ''}`).join('\n')}`
+  const recent = boardState.items.slice(-4);
+  const contextText = recent.length
+    ? `Current board snippets:\n${recent.map((item, idx) => {
+      const eqs = (item.equations || []).map((eq, i) => `${i + 1}) ${eq.label || 'eq'}: ${eq.latex || ''}`).join(' | ');
+      return `${idx + 1}. ${item.title || 'Untitled'} @ (${Math.round(item.x)}, ${Math.round(item.y)}): ${eqs}`;
+    }).join('\n')}`
     : 'Current board is empty.';
   const instructionText = `Board context:\n${contextText}\n\nUser request:\n${query || 'erase'}\n\nIf the user is iterating, update existing equations rather than replacing unrelated content.`;
   userParts.unshift({ type: 'text', text: instructionText });

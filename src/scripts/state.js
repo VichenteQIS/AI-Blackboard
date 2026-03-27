@@ -1,14 +1,16 @@
 export const boardState = {
-  title: '',
-  equations: [],
-  notes: [],
+  items: [],
+  panX: 0,
+  panY: 0,
+  nextWriteX: 0,
+  nextWriteY: 0,
+  nextId: 1,
   recordedAudioBlob: null,
 };
 
 export function resetBoardState() {
-  boardState.title = '';
-  boardState.equations = [];
-  boardState.notes = [];
+  boardState.items = [];
+  boardState.nextId = 1;
 }
 
 export function makeEqKey(eq, i) {

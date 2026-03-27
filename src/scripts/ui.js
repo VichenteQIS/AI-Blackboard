@@ -1,16 +1,22 @@
 import { el } from './dom.js';
 import { boardState, makeEqKey, resetBoardState } from './state.js';
 
+let isPanning = false;
+let panStartX = 0;
+let panStartY = 0;
+let basePanX = 0;
+let basePanY = 0;
+
 export function setStatus(msg) {
   el.status.textContent = msg ? `⚠ ${msg}` : '';
 }
 
 export function showLoading() {
-  el.boardContent.innerHTML = '<div class="loading"><span></span><span></span><span></span></div>';
+  setStatus('Thinking…');
 }
 
 export function showIdle() {
-  el.boardContent.innerHTML = '<div class="idle-title">What shall I write?</div><div class="idle-hint">Use text, voice, or image. Say "erase" to clear the board.</div>';
+  renderBoard();
 }
 
 function renderLatex(latex) {
@@ -21,51 +27,89 @@ function renderLatex(latex) {
   }
 }
 
-function buildEquationColumn(eq, i, key, isNew) {
-  const col = document.createElement('div');
-  col.className = `eq-row ${isNew ? 'new' : 'reused'}`;
-  col.dataset.key = key;
+function renderItem(item) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'board-item';
+  wrapper.style.left = `${item.x + boardState.panX}px`;
+  wrapper.style.top = `${item.y + boardState.panY}px`;
+  wrapper.dataset.itemId = String(item.id);
 
-  if (eq.label) {
-    const lbl = document.createElement('div');
-    lbl.className = 'eq-label';
-    lbl.textContent = eq.label;
-    col.appendChild(lbl);
-  }
+  const title = document.createElement('div');
+  title.className = 'eq-title';
+  title.textContent = item.title || '';
+  wrapper.appendChild(title);
 
-  const math = document.createElement('div');
-  math.className = `eq-math sz-${eq.size || 'large'}`;
-  math.innerHTML = renderLatex(eq.latex || '');
-  col.appendChild(math);
+  const strip = document.createElement('div');
+  strip.className = 'eq-strip';
 
-  if (isNew) {
-    const hand = document.createElement('div');
-    hand.className = 'hand';
-    col.appendChild(hand);
-  }
+  (item.equations || []).forEach((eq, i) => {
+    if (i > 0) {
+      const divider = document.createElement('div');
+      divider.className = 'eq-divider';
+      strip.appendChild(divider);
+    }
 
-  return col;
-}
+    const row = document.createElement('div');
+    row.className = 'eq-row';
+    row.dataset.key = makeEqKey(eq, i);
 
-function capturePositions(root) {
-  const map = new Map();
-  root.querySelectorAll('.eq-row[data-key]').forEach(node => {
-    map.set(node.dataset.key, node.getBoundingClientRect());
+    if (eq.label) {
+      const lbl = document.createElement('div');
+      lbl.className = 'eq-label';
+      lbl.textContent = eq.label;
+      row.appendChild(lbl);
+    }
+
+    const math = document.createElement('div');
+    math.className = `eq-math sz-${eq.size || 'large'}`;
+    math.innerHTML = renderLatex(eq.latex || '');
+    row.appendChild(math);
+
+    strip.appendChild(row);
   });
-  return map;
+
+  wrapper.appendChild(strip);
+
+  const notesEl = document.createElement('div');
+  notesEl.className = 'notes-area';
+  (item.notes || []).forEach((n, i) => {
+    const note = document.createElement('div');
+    note.className = 'note';
+    note.style.animationDelay = `${Math.min(i * 80, 280)}ms`;
+    note.textContent = n;
+    notesEl.appendChild(note);
+  });
+
+  wrapper.appendChild(notesEl);
+  return wrapper;
 }
 
-function spawnGhost(rect, sourceEl) {
-  const boardRect = el.boardContent.getBoundingClientRect();
-  const ghost = sourceEl.cloneNode(true);
-  ghost.classList.remove('new', 'reused');
-  ghost.classList.add('ghost-eq');
-  ghost.style.left = `${rect.left - boardRect.left}px`;
-  ghost.style.top = `${rect.top - boardRect.top}px`;
-  ghost.style.width = `${rect.width}px`;
-  ghost.style.height = `${rect.height}px`;
-  el.boardContent.appendChild(ghost);
-  setTimeout(() => ghost.remove(), 550);
+export function renderBoard() {
+  el.boardContent.innerHTML = '';
+
+  if (!boardState.items.length) {
+    const idleTitle = document.createElement('div');
+    idleTitle.className = 'idle-title';
+    idleTitle.textContent = 'What shall I write?';
+
+    const idleHint = document.createElement('div');
+    idleHint.className = 'idle-hint';
+    idleHint.textContent = 'Drag to move the board. Release and I write there.';
+
+    el.boardContent.appendChild(idleTitle);
+    el.boardContent.appendChild(idleHint);
+  }
+
+  boardState.items.forEach(item => {
+    el.boardContent.appendChild(renderItem(item));
+  });
+
+  const marker = document.createElement('div');
+  marker.className = 'write-marker';
+  marker.style.left = `${boardState.nextWriteX + boardState.panX}px`;
+  marker.style.top = `${boardState.nextWriteY + boardState.panY}px`;
+  marker.title = 'Next write position';
+  el.boardContent.appendChild(marker);
 }
 
 export function animateEraseSweep() {
@@ -78,75 +122,59 @@ export function animateEraseSweep() {
 export function paint(nextData) {
   if (nextData.action === 'erase') {
     animateEraseSweep();
-    setTimeout(showIdle, 220);
     resetBoardState();
+    setTimeout(renderBoard, 220);
     return;
   }
 
-  const prevRows = Array.from(el.boardContent.querySelectorAll('.eq-row[data-key]'));
-  const prevByKey = new Map(prevRows.map(node => [node.dataset.key, node]));
-  const prevPositions = capturePositions(el.boardContent);
+  const item = {
+    id: boardState.nextId++,
+    x: boardState.nextWriteX,
+    y: boardState.nextWriteY,
+    title: nextData.title || '',
+    equations: (nextData.equations || []).slice(0, 4),
+    notes: (nextData.notes || []).slice(0, 4),
+  };
 
-  const title = nextData.title || '';
-  const equations = (nextData.equations || []).slice(0, 4);
-  const notes = (nextData.notes || []).slice(0, 4);
+  boardState.items.push(item);
+  renderBoard();
+}
 
-  const strip = document.createElement('div');
-  strip.className = 'eq-strip';
+export function initBoardNavigation() {
+  const updateNextWriteFromCenter = () => {
+    const rect = el.board.getBoundingClientRect();
+    boardState.nextWriteX = rect.width / 2 - boardState.panX;
+    boardState.nextWriteY = rect.height / 2 - boardState.panY;
+  };
 
-  equations.forEach((eq, i) => {
-    const key = makeEqKey(eq, i);
-    const reused = prevByKey.has(key);
-    if (i > 0) {
-      const divider = document.createElement('div');
-      divider.className = 'eq-divider';
-      strip.appendChild(divider);
-    }
-    strip.appendChild(buildEquationColumn(eq, i, key, !reused));
+  el.board.addEventListener('pointerdown', evt => {
+    if (evt.button !== 0) return;
+    isPanning = true;
+    panStartX = evt.clientX;
+    panStartY = evt.clientY;
+    basePanX = boardState.panX;
+    basePanY = boardState.panY;
+    el.board.setPointerCapture(evt.pointerId);
   });
 
-  const notesEl = document.createElement('div');
-  notesEl.className = 'notes-area';
-  notes.forEach((n, i) => {
-    const note = document.createElement('div');
-    note.className = 'note';
-    note.style.animationDelay = `${Math.min(i * 80, 280)}ms`;
-    note.textContent = n;
-    notesEl.appendChild(note);
+  el.board.addEventListener('pointermove', evt => {
+    if (!isPanning) return;
+    boardState.panX = basePanX + (evt.clientX - panStartX);
+    boardState.panY = basePanY + (evt.clientY - panStartY);
+    updateNextWriteFromCenter();
+    renderBoard();
   });
 
-  el.boardContent.innerHTML = '';
-  const titleEl = document.createElement('div');
-  titleEl.className = 'eq-title';
-  titleEl.textContent = title;
-  el.boardContent.appendChild(titleEl);
-  el.boardContent.appendChild(strip);
-  el.boardContent.appendChild(notesEl);
+  const finishPan = () => {
+    if (!isPanning) return;
+    isPanning = false;
+    updateNextWriteFromCenter();
+    renderBoard();
+  };
 
-  const nextRows = Array.from(el.boardContent.querySelectorAll('.eq-row[data-key]'));
-  nextRows.forEach(row => {
-    const from = prevPositions.get(row.dataset.key);
-    if (!from) return;
-    const to = row.getBoundingClientRect();
-    const dx = from.left - to.left;
-    const dy = from.top - to.top;
-    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
-      row.style.transform = `translate(${dx}px, ${dy}px)`;
-      row.style.opacity = '0.9';
-      row.getBoundingClientRect();
-      row.style.transform = 'translate(0, 0)';
-      row.style.opacity = '1';
-    }
-  });
+  el.board.addEventListener('pointerup', finishPan);
+  el.board.addEventListener('pointercancel', finishPan);
 
-  prevByKey.forEach((node, key) => {
-    if (!nextRows.find(r => r.dataset.key === key)) {
-      const rect = prevPositions.get(key);
-      if (rect) spawnGhost(rect, node);
-    }
-  });
-
-  boardState.title = title;
-  boardState.equations = equations;
-  boardState.notes = notes;
+  updateNextWriteFromCenter();
+  renderBoard();
 }

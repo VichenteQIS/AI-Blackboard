@@ -1,5 +1,6 @@
 export const el = {
   frame: document.getElementById('frame'),
+  board: document.getElementById('board'),
   boardContent: document.getElementById('board-content'),
   apikey: document.getElementById('apikey'),
   req: document.getElementById('req'),

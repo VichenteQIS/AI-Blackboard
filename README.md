@@ -7,6 +7,7 @@ Interactive chalkboard + chat experience with **text, voice, and image input**.
 - ChatGPT-style conversational area with user/assistant messages.
 - **Conversational mode** (hands-free): click once to enable, then speak naturally.
 - The app listens, detects when you stop talking, transcribes, updates the board, and replies in chat automatically.
+- Infinite-style board behavior: drag/pan the green board and release; new equations are written at the new viewport center while previous equations stay where they were.
 
 ## Features
 
@@ -14,6 +15,7 @@ Interactive chalkboard + chat experience with **text, voice, and image input**.
   - `write` → render/update equations and notes.
   - `erase` → clear the board.
 - Dynamic board resize: drag the bottom-right handle or use width/height sliders.
+- Pannable board canvas with persistent equation placements.
 - Animated chalk effects for writing, moving/reusing, and erasing equations.
 
 ## Project structure
